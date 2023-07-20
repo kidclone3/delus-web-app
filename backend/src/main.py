@@ -9,13 +9,13 @@ from src.controllers.chatbot_controller import router as chatbot_router
 from src.controllers.olp_controller import router as olp_router
 
 app = FastAPI(**app_configs)
-# app.add_middleware(
-#     CORSMiddleware,
-#     allow_origins=settings.CORS_ORIGINS,
-#     allow_credentials=True,
-#     allow_methods=("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"),
-#     allow_headers=settings.CORS_HEADERS,
-# )
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.CORS_ORIGINS,
+    allow_credentials=True,
+    allow_methods=("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"),
+    allow_headers=settings.CORS_HEADERS,
+)
 
 
 @app.get("/healthcheck")
