@@ -24,3 +24,7 @@ class CustomerSchema(ORJSONModel):
 class ListCustomerSchema(ORJSONModel):
     data: list[CustomerSchema]
     total: int
+
+class ListEmailSchema(ORJSONModel):
+    data: list[EmailStr]
+    total: int
