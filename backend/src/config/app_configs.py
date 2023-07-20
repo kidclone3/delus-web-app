@@ -6,7 +6,7 @@ from src.constants import Environment
 class Setting(BaseSettings):
     ENVIRONMENT: Environment = Environment.TESTING
     APP_VERSION: str = "0.0.1"
-
+    DATABASE_URL: str
     CORS_ORIGINS: list[str]
     CORS_HEADERS: list[str]
 
@@ -27,6 +27,6 @@ app_configs: dict[str, Any] = {
     },
     "license_info": {
         "name": "Apache 2.0",
-        "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
+        "url": "https://www.apache.org/licenses/LICENSE-2.0.html",
     },
 }
