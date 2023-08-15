@@ -8,6 +8,7 @@ from src.controllers.home_controller import router as home_router
 from src.controllers.chatbot_controller import router as chatbot_router
 from src.controllers.olp_controller import router as olp_router
 from src.controllers.driver_controller import router as driver_router
+from src.controllers.ride_controller import router as ride_router
 
 app = FastAPI(**app_configs)
 app.add_middleware(
@@ -31,6 +32,7 @@ app.include_router(home_router, prefix="/home", tags=["Home"])
 app.include_router(chatbot_router, prefix="/chatbot", tags=["Chatbot"])
 app.include_router(olp_router, prefix="/olp", tags=["OLP"])
 app.include_router(driver_router, prefix="/drivers", tags=["Driver"])
+app.include_router(ride_router, prefix="/rides", tags=["Ride"])
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8005)

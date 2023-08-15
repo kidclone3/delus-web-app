@@ -19,8 +19,8 @@ depends_on = None
 def upgrade() -> None:
     op.create_table(
         "rides",
-        sa.Column("id", sa.Integer(), nullable=False),
-        sa.Column("car_id", sa.Integer(), nullable=False, unique=True),
+        sa.Column("id", sa.Integer(), nullable=False, primary_key=True),
+        sa.Column("car_id", sa.String(length=255), nullable=False, unique=True),
         sa.Column("location", sa.String(length=255), nullable=False),
         sa.Column("path", sa.Text(), nullable=True),
     )
