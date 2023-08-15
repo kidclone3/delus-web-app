@@ -1,8 +1,8 @@
 """create olp customer table
 
-Revision ID: 28c796d88bdb
+Revision ID: 1d2e6ffdc15f
 Revises: 
-Create Date: 2023-07-20 15:43:57.708105
+Create Date: 2023-08-14 11:06:16.468110
 
 """
 from alembic import op
@@ -10,11 +10,10 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '28c796d88bdb'
+revision = '1d2e6ffdc15f'
 down_revision = None
 branch_labels = None
 depends_on = None
-
 
 def upgrade() -> None:
     op.create_table(
