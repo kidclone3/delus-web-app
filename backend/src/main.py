@@ -22,6 +22,9 @@ app.add_middleware(
 async def healthcheck() -> dict[str, str]:
     return {"status": "ok"}
 
+@app.get("/")
+def main():
+    return {"message": "Hello World"}
 
 app.include_router(home_router, prefix="/home", tags=["Home"])
 app.include_router(chatbot_router, prefix="/chatbot", tags=["Chatbot"])

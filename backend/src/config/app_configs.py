@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, List, Dict
 from pydantic import BaseSettings
 from src.constants import Environment
 
@@ -7,8 +7,8 @@ class Setting(BaseSettings):
     ENVIRONMENT: Environment = Environment.TESTING
     APP_VERSION: str = "0.0.1"
     DATABASE_URL: str
-    CORS_ORIGINS: list[str]
-    CORS_HEADERS: list[str]
+    CORS_ORIGINS: List[str]
+    CORS_HEADERS: List[str]
 
     class Config:
         # `.env.prod` takes priority over `.env`
@@ -17,7 +17,7 @@ class Setting(BaseSettings):
 
 settings = Setting()
 
-app_configs: dict[str, Any] = {
+app_configs: Dict[str, Any] = {
     "title": "Delus first web app",
     "version": "0.0.1",
     "contact": {
