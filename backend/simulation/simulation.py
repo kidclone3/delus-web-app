@@ -20,14 +20,17 @@ DB_PASSWORD = os.environ.get("DB_PASSWORD")
 def run(env, conn):
 
 
-    path = 'first'
-    i = 0
+    i = paths[0].get('i')
+
     while True:
         with conn.cursor() as cursor:
-            x, y = paths[path][i]
+            carId = paths[0].get('carId')
+            selected = paths[0].get('selected')
+            path = paths[0].get(selected)
+            x, y = path[i]
             query = f"""
                 INSERT INTO rides (car_id, location, path)
-                VALUES ('car1', '{x}:{y}', '{json.dumps(paths[path])}') as new
+                VALUES ('{carId}', '{x}:{y}', '{json.dumps(path)}') as new
                 ON DUPLICATE KEY UPDATE location = new.location, path = new.path;
             """
             print(query)
@@ -37,8 +40,8 @@ def run(env, conn):
             logger.debug(f"Location: {x}:{y}")
             time.sleep(2)
             yield env.timeout(1)
-            if i == len(paths[path]) - 1:
-                path = 'second' if path == 'first' else 'first'
+            if i == len(path) - 1:
+                selected = 'second' if selected == 'first' else 'first'
                 i = 0
             else:
                 i += 1
