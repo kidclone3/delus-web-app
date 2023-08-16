@@ -17,7 +17,7 @@ class Ride(BaseModel):
 class RideSchema(ORJSONModel):
     id: Optional[int] = None
     car_id: str
-    location: str
+    location: Optional[str]
     path: Optional[str]
 
 
