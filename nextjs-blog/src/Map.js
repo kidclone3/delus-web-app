@@ -51,7 +51,6 @@ export default class Map extends React.Component {
       for (const ride of rides.data) {
         const { car_id, location } = ride;
         const path = JSON.parse(ride.path);
-        console.log(location);
         const [x, y] = location.split(":");
         cars.push({
           id: car_id,

@@ -4,7 +4,7 @@ const squareSize = gridSize / gridCount;
 const fetchInterval = 1000;
 const refreshInterval = 16;
 const turnDuration = refreshInterval * 8;
-const animationOverhead = 2000;
+const animationOverhead = 200;
 
 const config = {
   gridSize,
