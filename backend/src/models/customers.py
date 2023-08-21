@@ -1,7 +1,6 @@
 from typing import Optional
 
 from sqlalchemy import *
-from sqlalchemy.orm import Mapped
 
 from src.models import BaseModel
 from src.utils.utils import ORJSONModel
@@ -14,12 +13,14 @@ class Customer(BaseModel):
     name = Column(String(255), nullable=False, unique=True)
     active = Column(Boolean, nullable=False, default=True)
     location = Column(String(255), nullable=False)
+    destination = Column(String(255), nullable=True)
 
 
 class CustomerSchema(ORJSONModel):
     name: str
     active: bool
     location: str
+    destination: Optional[str]
 
 
 class ListCustomerSchema(ORJSONModel):

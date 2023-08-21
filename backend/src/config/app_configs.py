@@ -1,18 +1,22 @@
 from typing import Any, List, Dict
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from src.constants import Environment
 
 
 class Setting(BaseSettings):
+    model_config = SettingsConfigDict(extra='forbid', env_file='.env')
+
     ENVIRONMENT: Environment = Environment.TESTING
     APP_VERSION: str = "0.0.1"
     DATABASE_URL: str
     CORS_ORIGINS: List[str]
     CORS_HEADERS: List[str]
+    DB_USER: str
+    DB_PASSWORD: str
 
-    class Config:
-        # `.env.prod` takes priority over `.env`
-        env_file = ".env", ".env.prod"
+    # class Config:
+    #     # `.env.prod` takes priority over `.env`
+    #     env_file = ".env", ".env.prod"
 
 
 settings = Setting()

@@ -23,3 +23,15 @@ async def get_all_customers(
     except HTTPException as exception:
         message_exception = exception.detail
         return {"message": message_exception}
+
+@router.post("/", status_code=status.HTTP_200_OK)
+async def create_customer(
+        customer: CustomerSchema,
+        db: Session = Depends(get_session),
+) -> ExceptionMessage:
+    try:
+        message = await customer_service.create_customer(customer, db)
+        return message
+    except HTTPException as exception:
+        message_exception = exception.detail
+        return {"message": message_exception}
