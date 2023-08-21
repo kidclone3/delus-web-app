@@ -17,10 +17,7 @@ export const getRandomInt = (min, max) => {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 };
 
-const baseURL =
-  process.env.APP_ENV === "dev"
-    ? "http://localhost:8000"
-    : "https://delusthefirst.tech";
+const baseURL = process.env.APP_API;
 
 export const api = {};
 api.get = async (endpoint) => {
