@@ -43,7 +43,7 @@ class Customer:
         while True:
             new_active = False
             if self.active:
-                new_active = decide(5)
+                new_active = decide(60)
             else:
                 new_active = decide(5)
 
@@ -120,16 +120,21 @@ if __name__ == "__main__":
         env = simpy.rt.RealtimeEnvironment(factor=0.2, strict=False)
 
         riders = simpy.Store(env, capacity=3)
+        running_riders = []
         for i in range(3):
             rider = Rider(i, paths, conn, env)
+            running_riders.append(rider)
             # riders.put(rider)
 
         customers = simpy.Store(env, capacity=10)
         list_customer = ['Alice', 'Michael', 'Kate', 'Paul', 'Susan', 'Andrew']
+        running_customers = []
         for name in list_customer:
             customer = Customer(name, env, conn)
+            running_customers.append(customer)
             # customers.put(customer)
-
-        env.run(until=1000)
+        print(running_riders)
+        print(running_customers)
+        env.run(until=50)
     except Exception as e:
         logger.error(e)
