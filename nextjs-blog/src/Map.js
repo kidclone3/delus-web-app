@@ -59,8 +59,8 @@ export default class Map extends React.Component {
 
   async loadData() {
     while (true) {
-      const rides = await api.get("/rides");
-
+      const data = await api.get("/rides");
+      const rides = data.data;
       const timeout = 2000;
       const now = Date.now();
       if (now - this.previousUpdateAt > timeout) {
@@ -73,7 +73,7 @@ export default class Map extends React.Component {
       this.previousUpdateAt = now;
 
       const bikes = [];
-      for (const ride of rides.data) {
+      for (const ride of rides) {
         const { car_id, location } = ride;
         const path = JSON.parse(ride.path);
         const [x, y] = location.split(":");
@@ -123,7 +123,12 @@ export default class Map extends React.Component {
 
     const bikes = this.state.bikes.map(({ id, actual, rotation, path }) => {
       return (
-        <Bike key={id} actual={actual} rotation={rotation || 0} path={path} />
+        <Bike
+          key={id}
+          actual={actual}
+          rotation={rotation || 0}
+          path={path || []}
+        />
       );
     });
 

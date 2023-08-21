@@ -24,7 +24,9 @@ const {
 export default class Bike extends React.Component {
   constructor(props) {
     super(props);
-    const { path, actual } = props;
+    // const { path, actual } = props;
+    const path = props?.path || [];
+    const actual = props?.actual || [0, 0];
 
     let pathIndex = path.findIndex(([x, y]) => {
       return x === actual[0] && y === actual[1];
