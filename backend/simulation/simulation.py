@@ -10,23 +10,25 @@ import pymysql.cursors
 import simpy
 import orjson
 from loguru import logger
+from dotenv import load_dotenv
+
+load_dotenv()
 
 logger.add("file_{time:YYYY:MM:DD:HH}.log")
 logger.add(sys.stdout, colorize=True, format="<green>{time}</green> <level>{message}</level>")
 
-# DATABASE_URL = os.environ.get("DATABASE_URL")
 DB_USER = os.environ.get("DB_USER")
 DB_PASSWORD = os.environ.get("DB_PASSWORD")
-def run(env, conn):
+def run(env, conn, idx=0):
 
 
-    i = paths[0].get('i')
+    i = paths[idx].get('i')
 
     while True:
         with conn.cursor() as cursor:
-            carId = paths[0].get('carId')
-            selected = paths[0].get('selected')
-            path = paths[0].get(selected)
+            carId = paths[idx].get('carId')
+            selected = paths[idx].get('selected')
+            path = paths[idx].get(selected)
             x, y = path[i]
             query = f"""
                 INSERT INTO rides (car_id, location, path)
@@ -48,13 +50,17 @@ def run(env, conn):
 
 
 if __name__ == "__main__":
-    conn = pymysql.connect(
-        host="localhost",
-        port=3306,
-        user=DB_USER,
-        password=DB_PASSWORD,
-        db="delus_web",
-    )
-    env = simpy.Environment()
-    env.process(run(env, conn))
-    env.run(until=50)
+    id = int(sys.argv[1])
+    try:
+        conn = pymysql.connect(
+            host="localhost",
+            port=3306,
+            user=DB_USER,
+            password=DB_PASSWORD,
+            db="delus_web",
+        )
+        env = simpy.Environment()
+        env.process(run(env, conn, id))
+        env.run(until=50)
+    except Exception as e:
+        logger.error(e)
