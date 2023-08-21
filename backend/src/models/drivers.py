@@ -5,6 +5,7 @@ from src.utils.utils import ORJSONModel
 
 from pydantic import EmailStr
 
+
 class Driver(BaseModel):
     __tablename__ = "drivers"
     id = Column(Integer, primary_key=True)
@@ -14,6 +15,7 @@ class Driver(BaseModel):
     password = Column(String(255), nullable=False)
     license_number = Column(String(255), nullable=False)
 
+
 class DriverSchema(ORJSONModel):
     id: int
     name: str
@@ -21,6 +23,7 @@ class DriverSchema(ORJSONModel):
     phone: str
     password: str
     license_number: str
+
 
 class ListDriverSchema(ORJSONModel):
     data: list[DriverSchema]
