@@ -1,5 +1,5 @@
 import React from "react";
-import Car from "./car/Car";
+import Bike from "./car/Bike";
 import records from "./car/records";
 import { wait, api } from "./utils";
 import { obstacles } from "./obstacles";
@@ -88,7 +88,7 @@ export default class Map extends React.Component {
 
     const cars = this.state.cars.map(({ id, actual, rotation, path }) => {
       return (
-        <Car key={id} actual={actual} rotation={rotation || 0} path={path} />
+        <Bike key={id} actual={actual} rotation={rotation || 0} path={path} />
       );
     });
 

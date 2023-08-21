@@ -1,5 +1,6 @@
 import React from "react";
-import CarIcon from "./car-icon";
+// import CarIcon from "./car-icon";
+import BikeIcon from "./bike-icon";
 import { wait } from "../utils";
 
 import {
@@ -20,7 +21,7 @@ const {
   animationOverhead,
 } = config;
 
-export default class Car extends React.Component {
+export default class Bike extends React.Component {
   constructor(props) {
     super(props);
     const { path, actual } = props;
@@ -76,7 +77,7 @@ export default class Car extends React.Component {
 
   async move(actual, path, receivedAt) {
     while (this.moveBusy) {
-      await wait(100);
+      await wait(10);
       if (receivedAt !== this.latestUpdateAt) return;
     }
 
@@ -138,7 +139,7 @@ export default class Car extends React.Component {
 
     const [x, y] = position;
     return (
-      <CarIcon
+      <BikeIcon
         x={x * squareSize - 20}
         y={y * squareSize - 20}
         rotation={rotation}
