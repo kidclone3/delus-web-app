@@ -37,6 +37,9 @@ class Customer:
         env.process(self.run(conn))
 
     def run(self, conn):
+        # get the pid for the current process
+        pid = os.getpid()
+        logger.debug(f"Customer {self.name} is running on process {pid}")
         while True:
             new_active = False
             if self.active:
@@ -63,8 +66,8 @@ class Customer:
                         logger.info(f"Customer {self.name} is activated: {self.active}")
                     except Exception as e:
                         logger.error("DB error: ", str(e))
-                yield self.env.timeout(self.refreshInterval/1000)
-            # time.sleep(self.refreshInterval / 1000)
+                yield self.env.timeout(5)
+            # time.sleep(0.5)
 
 
 class Rider:
@@ -76,7 +79,9 @@ class Rider:
 
     def run(self, env, conn, idx=0):
 
-
+        # get the pid for the current process
+        pid = os.getpid()
+        logger.debug(f"Rider {self.id} is running on process {pid}")
         i = paths[idx].get('i')
         carId = paths[idx].get('carId')
         selected = paths[idx].get('selected')
@@ -93,7 +98,7 @@ class Rider:
                 conn.commit()
                 # print(await cursor.fetchall())
                 logger.debug(f"Car Id: {carId}, Location: {x}:{y}")
-                time.sleep(0.15)
+                # time.sleep(0.15)
                 yield env.timeout(1)
                 if i == len(path) - 1:
                     selected = 'second' if selected == 'first' else 'first'
@@ -114,16 +119,16 @@ if __name__ == "__main__":
         # env = simpy.Environment()
         env = simpy.rt.RealtimeEnvironment(factor=0.2, strict=False)
 
-        riders = simpy.Store(env)
+        riders = simpy.Store(env, capacity=3)
         for i in range(3):
             rider = Rider(i, paths, conn, env)
-            riders.put(rider)
+            # riders.put(rider)
 
-        customers = simpy.Store(env)
+        customers = simpy.Store(env, capacity=10)
         list_customer = ['Alice', 'Michael', 'Kate', 'Paul', 'Susan', 'Andrew']
         for name in list_customer:
             customer = Customer(name, env, conn)
-            customers.put(customer)
+            # customers.put(customer)
 
         env.run(until=1000)
     except Exception as e:

@@ -1,6 +1,7 @@
 import React from "react";
 import Bike from "./car/Bike";
 import records from "./car/records";
+import CustomerIcon from "./customer/customer-icon";
 import { wait, api } from "./utils";
 import { obstacles } from "./obstacles";
 
@@ -21,13 +22,37 @@ obstacles.forEach(([xStart, xEnd, yStart, yEnd, color]) => {
   }
 });
 
+const pathCoords = [];
+const roadRects = [];
+for (let x = 0; x < 50; x++) {
+  for (let y = 0; y < 50; y++) {
+    if (!coordsToObstacles[`${x}:${y}`]) {
+      roadRects.push(
+        <rect
+          key={`${x}:${y}`}
+          width={squareSize}
+          height={squareSize}
+          x={x * squareSize}
+          y={y * squareSize}
+          fill="white"
+          onClick={() => {
+            pathCoords.push([x, y]);
+            console.log(JSON.stringify(pathCoords));
+          }}
+        />
+      );
+    }
+  }
+}
+
 export default class Map extends React.Component {
   constructor(props) {
     super(props);
 
     this.previousUpdateAt = Date.now();
     this.state = {
-      cars: [],
+      bikes: [],
+      customers: [],
       refreshing: false,
     };
   }
@@ -40,32 +65,42 @@ export default class Map extends React.Component {
       const now = Date.now();
       if (now - this.previousUpdateAt > timeout) {
         this.previousUpdateAt = now;
-        this.setState({ cars: [], refreshing: true });
+        this.setState({ bikes: [], refreshing: true });
         await wait(fetchInterval);
         continue;
       }
 
       this.previousUpdateAt = now;
 
-      const cars = [];
+      const bikes = [];
       for (const ride of rides.data) {
         const { car_id, location } = ride;
         const path = JSON.parse(ride.path);
         const [x, y] = location.split(":");
-        cars.push({
+        bikes.push({
           id: car_id,
           path: path,
           actual: [parseInt(x), parseInt(y)],
         });
       }
 
-      this.setState({ cars, refreshing: false });
+      this.setState({ bikes: bikes, refreshing: false });
+      await wait(fetchInterval);
+    }
+  }
+
+  async loadCustomers() {
+    while (true) {
+      const data = await api.get("/customers");
+      let customers = data.data;
+      this.setState({ customers });
       await wait(fetchInterval);
     }
   }
 
   componentDidMount() {
     this.loadData();
+    this.loadCustomers();
   }
 
   render() {
@@ -86,21 +121,19 @@ export default class Map extends React.Component {
       );
     }
 
-    const cars = this.state.cars.map(({ id, actual, rotation, path }) => {
+    const bikes = this.state.bikes.map(({ id, actual, rotation, path }) => {
       return (
         <Bike key={id} actual={actual} rotation={rotation || 0} path={path} />
       );
     });
 
-    const actualsColors = { car1: "#10b981", car2: "#6366f1", car3: "#f43f5e" };
-    const actuals = this.state.cars.map(({ id, actual }) => {
+    const customers = this.state.customers.map(({ id, name, location }) => {
+      const [x, y] = location.split(":");
       return (
-        <circle
-          key={`${actual[0]}:${actual[1]}`}
-          r={squareSize / 2}
-          cx={actual[0] * squareSize + squareSize / 2}
-          cy={actual[1] * squareSize + squareSize / 2}
-          fill={actualsColors[id]}
+        <CustomerIcon
+          key={`${x}:${y}`}
+          x={x * squareSize - squareSize / 2}
+          y={y * squareSize - squareSize / 2}
         />
       );
     });
@@ -112,9 +145,10 @@ export default class Map extends React.Component {
             className={`map-refresh ${this.state.refreshing ? "active" : ""}`}
           />
           <svg width={gridSize} height={gridSize} className="map">
+            {roadRects}
             {obstacleElems}
-            {actuals}
-            {cars}
+            {bikes}
+            {customers}
           </svg>
         </div>
       </div>
