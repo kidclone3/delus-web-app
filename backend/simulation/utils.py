@@ -1,5 +1,5 @@
 import random
-from obstacles import obstacles
+from data.obstacles import obstacles
 
 def decide(percent):
     return random.randint(0, 100) < percent

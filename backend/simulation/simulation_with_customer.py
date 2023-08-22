@@ -5,14 +5,10 @@ import random
 import sys
 import time
 
-import httpx as httpx
+from data.data import paths
 
-from data import paths
-
-import pymysql.cursors
 import simpy
 import simpy.rt
-import orjson
 from loguru import logger
 from dotenv import load_dotenv
 
@@ -21,7 +17,7 @@ import requests
 
 load_dotenv()
 
-logger.add("simulation_with_customer_{time:YYYY:MM:DD:HH:MM}.log")
+logger.add("logs/simulation_with_customer_{time:YYYY:MM:DD:HH:MM}.log")
 logger.add(sys.stdout, colorize=True, format="<green>{time}</green> <level>{message}</level>")
 
 DB_USER = os.environ.get("DB_USER")

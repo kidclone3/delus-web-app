@@ -4,7 +4,7 @@ import os
 import sys
 import time
 
-from data import paths
+from data.data import paths
 
 import pymysql.cursors
 import simpy
@@ -14,7 +14,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-logger.add("simulation_{time:YYYY:MM:DD:HH}.log")
+logger.add("logs/simulation_{time:YYYY:MM:DD:HH}.log")
 logger.add(sys.stdout, colorize=True, format="<green>{time}</green> <level>{message}</level>")
 
 DB_USER = os.environ.get("DB_USER")
