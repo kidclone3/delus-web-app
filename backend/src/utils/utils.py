@@ -22,3 +22,4 @@ class ORJSONModel(BaseModel):
         json_dumps = orjson_dumps
         allow_population_by_field_name = True
         json_encoders = {datetime: convert_datetime_to_gmt}
+        arbitrary_types_allowed = True

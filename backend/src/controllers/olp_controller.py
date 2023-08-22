@@ -1,3 +1,5 @@
+from typing import Union
+
 from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.orm import Session
 
@@ -13,7 +15,7 @@ router = APIRouter()
 @router.get("/", status_code=status.HTTP_200_OK)
 async def get_all_email(
     db: Session = Depends(get_session),
-) -> ListCustomerSchema | ExceptionMessage:
+) -> Union[ListCustomerSchema, ExceptionMessage]:
     # TODO: admin check
     try:
         list_email = await olp_handle_email.get_all_email(db)
