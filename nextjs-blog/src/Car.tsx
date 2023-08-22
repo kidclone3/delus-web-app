@@ -42,7 +42,6 @@ export default class Car extends React.Component<Props, State> {
       return x === actual[0] && y === actual[1];
     });
     if (pathIndex === -1 || pathIndex === 0) pathIndex = 1;
-    console.log(pathIndex);
     const rotation: number = getRotation(path, pathIndex);
 
     this.state = {
@@ -90,7 +89,7 @@ export default class Car extends React.Component<Props, State> {
     receivedAt: number
   ) {
     while (this.moveBusy) {
-      await wait(100);
+      await wait(50);
       if (receivedAt !== this.latestUpdateAt) return;
     }
 

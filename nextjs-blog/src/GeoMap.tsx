@@ -51,6 +51,7 @@ const loadData = async (previousUpdateAtRef, setCars, setRefreshing) => {
         path: path,
         actual: [parseInt(x), parseInt(y)],
       });
+      console.log(cars);
     }
 
     setCars(cars);
