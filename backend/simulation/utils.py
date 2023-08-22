@@ -1,3 +1,4 @@
+import math
 import random
 
 from config import GRID_COUNT
@@ -26,3 +27,9 @@ def get_road_nodes():
                 road_nodes.append(f"{x}:{y}")
 
     return road_nodes
+def get_distance(coordsA, coordsB):
+    xA, yA = coordsA
+    xB, yB = coordsB
+    return math.pow(xB - xA, 2) + math.pow(yB - yA, 2)
+
+road_nodes = [coord for coord in get_road_nodes() if coord[0] not in ['0',str(GRID_COUNT-1)] and coord[2] not in ['0', str(GRID_COUNT-1)]]
