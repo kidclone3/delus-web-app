@@ -1,43 +1,50 @@
-import React from "react";
-// import CarIcon from "./car-icon";
-import BikeIcon from "./bike-icon";
-import { wait } from "../utils";
-
+import React from 'react';
+import CarIcon from './CarIcon';
+import { wait } from '../shared/utils';
 import {
   advanceCoord,
-  getNextCoordIndex,
   countTurns,
+  getNextCoordIndex,
   getRotation,
   getTurnDistance,
-} from "./Movement";
-
-import config from "../config";
+} from './movement';
+import config from '../shared/config';
 
 const {
   squareSize,
-  refreshInterval,
   fetchInterval,
+  refreshInterval,
   turnDuration,
   animationOverhead,
 } = config;
 
-export default class Bike extends React.Component {
-  constructor(props) {
+interface Props {
+  path: [number, number][];
+  actual: [number, number];
+}
+
+interface State {
+  position: [number, number];
+  rotation: number;
+  path: [number, number][];
+}
+
+export default class Car extends React.Component<Props, State> {
+  private latestUpdateAt = 0;
+  private rotateBusy = false;
+  private moveBusy = false;
+
+  constructor(props: Props) {
     super(props);
-    // const { path, actual } = props;
-    const path = props?.path || [];
-    const actual = props?.actual || [0, 0];
+    const { path, actual } = props;
 
     let pathIndex = path.findIndex(([x, y]) => {
       return x === actual[0] && y === actual[1];
     });
-    if (pathIndex === 0) pathIndex = 1;
+    if (pathIndex === -1 || pathIndex === 0) pathIndex = 1;
+    console.log(pathIndex);
+    const rotation: number = getRotation(path, pathIndex);
 
-    const rotation = getRotation(path, pathIndex);
-
-    this.latestUpdateAt = 0;
-    this.rotateBusy = false;
-    this.moveBusy = false;
     this.state = {
       position: actual,
       rotation,
@@ -45,7 +52,7 @@ export default class Bike extends React.Component {
     };
   }
 
-  async rotate(section, i) {
+  async rotate(section: [number, number][], i: number) {
     this.rotateBusy = true;
 
     let rotation = this.state.rotation;
@@ -77,9 +84,13 @@ export default class Bike extends React.Component {
     this.rotateBusy = false;
   }
 
-  async move(actual, path, receivedAt) {
+  async move(
+    actual: [number, number],
+    path: [number, number][],
+    receivedAt: number
+  ) {
     while (this.moveBusy) {
-      await wait(10);
+      await wait(100);
       if (receivedAt !== this.latestUpdateAt) return;
     }
 
@@ -128,7 +139,7 @@ export default class Bike extends React.Component {
     this.moveBusy = false;
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps: Props) {
     if (prevProps.actual === this.props.actual) return;
 
     const receivedAt = Date.now();
@@ -141,9 +152,9 @@ export default class Bike extends React.Component {
 
     const [x, y] = position;
     return (
-      <BikeIcon
-        x={x * squareSize - 20}
-        y={y * squareSize - 20}
+      <CarIcon
+        x={parseFloat((x * squareSize - 20).toFixed(2))}
+        y={parseFloat((y * squareSize - 20).toFixed(2))}
         rotation={rotation}
       />
     );

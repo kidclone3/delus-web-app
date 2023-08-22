@@ -8,9 +8,9 @@ const shapes = `
   </g>
 `;
 
-const CustomerIcon = ({ x, y }) => (
+const CustomerIcon = ({ x, y }: { x: number; y: number }) => (
   <svg
-    style={{ position: "relative", zIndex: 1 }}
+    style={{ position: 'relative', zIndex: 1 }}
     x={x}
     y={y}
     fill="#000000"
