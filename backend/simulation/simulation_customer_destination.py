@@ -35,8 +35,6 @@ if __name__ == "__main__":
         for i in range(3):
             rider = Driver(i, paths, env)
             running_riders.append(rider)
-            # riders.put(rider)
-
 
         client = Client()
         list_customer = ['Alice', 'Michael', 'Kate', 'Paul', 'Susan', 'Andrew']
@@ -44,7 +42,6 @@ if __name__ == "__main__":
         for name in list_customer:
             customer = Customer(name, client, env)
             running_customers.append(customer)
-            # customers.put(customer)
 
         env.run(until=500)
     except Exception as e:
