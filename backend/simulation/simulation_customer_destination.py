@@ -12,6 +12,7 @@ import simpy.rt
 from loguru import logger
 from dotenv import load_dotenv
 
+from zeromq.client import Client
 from utils import decide, get_road_nodes
 import requests
 
@@ -27,13 +28,14 @@ road_nodes = [coord for coord in get_road_nodes() if coord != '0:0' and coord !=
 
 
 class Customer:
-    def __init__(self, name, env):
+    def __init__(self, name, client, env):
         self.refreshInterval = 200
         self.name = name
         self.active = False
         self.location = None
         self.destination = None
         self.env = env
+        self.client = client
         env.process(self.run())
 
     def run(self):
@@ -54,22 +56,17 @@ class Customer:
                     logger.debug(f"Customer {self.name} is activated at {location}")
 
                 self.active = new_active
-                # query = f"""
-                #     INSERT INTO customers (name, active, location)
-                #     VALUES ('{self.name}', {self.active}, '{self.location}') as new
-                #     ON DUPLICATE KEY UPDATE active = new.active, location = new.location;
-                # """
 
                 # create post request to create/update customer without async
                 data = {
                     "name": self.name,
                     "active": self.active,
                     "location": self.location,
-                    "destination": self.destination
                 }
                 response = requests.post("http://localhost:8005/customers", json=data)
                 logger.debug(f"Customer {self.name} is activated: {self.active}")
                 logger.info(f"Response: {response.json()}")
+                self.client.send(data)
 
             yield self.env.timeout(5)
             # time.sleep(0.5)
@@ -115,20 +112,21 @@ if __name__ == "__main__":
         # env = simpy.Environment()
         env = simpy.rt.RealtimeEnvironment(factor=0.5)
 
-        riders = simpy.Store(env, capacity=3)
         running_riders = []
         for i in range(3):
             rider = Rider(i, paths, env)
             running_riders.append(rider)
             # riders.put(rider)
 
-        customers = simpy.Store(env, capacity=10)
+
+        client = Client()
         list_customer = ['Alice', 'Michael', 'Kate', 'Paul', 'Susan', 'Andrew']
         running_customers = []
         for name in list_customer:
-            customer = Customer(name, env)
+            customer = Customer(name, client, env)
             running_customers.append(customer)
             # customers.put(customer)
+
         print(running_riders)
         print(running_customers)
         env.run(until=500)

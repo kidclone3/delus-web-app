@@ -35,3 +35,16 @@ async def create_customer(
     except HTTPException as exception:
         message_exception = exception.detail
         return {"message": message_exception}
+
+@router.post("/update_destination", status_code=status.HTTP_200_OK)
+async def update_destination(
+        name: str,
+        destination: str,
+        db: Session = Depends(get_session),
+) -> ExceptionMessage:
+    try:
+        message = await customer_service.update_destination(name, destination, db)
+        return message
+    except HTTPException as exception:
+        message_exception = exception.detail
+        return {"message": message_exception}

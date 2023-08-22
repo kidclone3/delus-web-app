@@ -1,6 +1,6 @@
 import random
 from typing import List, Tuple, Optional
-from simulation.data.obstacles import obstacles
+from data.obstacles import obstacles
 from config import *
 
 Obstacle = Tuple[int, int, int, int, Optional[str]]

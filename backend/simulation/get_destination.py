@@ -1,5 +1,8 @@
 import time
 from hashlib import md5
+
+import requests
+
 from methods import *
 queue = []
 from zeromq.worker import Worker
@@ -12,9 +15,7 @@ def push_message(data):
 def get_destination(msg):
     name = msg.get('name')
     location = msg.get('location')
-
     x, y = map(int, location.split(':'))
-
     dest_x, dest_y = generate_destination((x, y))
     dest = f"{dest_x}:{dest_y}"
     print(dest)
@@ -36,6 +37,11 @@ if __name__ == "__main__":
                 destination = get_destination(msg)
                 logger.info(f"Destination: {destination}")
                 # logger.info(f"Destination: {destination}")
+                request = requests.post(url="http://localhost:8005/customers/update_destination", params={
+                    "name": msg.get('name'),
+                    "destination": destination
+                })
+                logger.info(f"Response: {request.json()}")
 
         except Exception as e:
             time.sleep(1)
