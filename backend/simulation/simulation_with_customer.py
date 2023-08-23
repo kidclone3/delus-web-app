@@ -116,10 +116,10 @@ if __name__ == "__main__":
         env = simpy.rt.RealtimeEnvironment(factor=0.5)
 
         riders = simpy.Store(env, capacity=3)
-        running_riders = []
+        running_drivers = []
         for i in range(3):
             rider = Rider(i, paths, env)
-            running_riders.append(rider)
+            running_drivers.append(rider)
             # riders.put(rider)
 
         customers = simpy.Store(env, capacity=10)
@@ -129,7 +129,7 @@ if __name__ == "__main__":
             customer = Customer(name, env)
             running_customers.append(customer)
             # customers.put(customer)
-        print(running_riders)
+        print(running_drivers)
         print(running_customers)
         env.run(until=500)
     except Exception as e:

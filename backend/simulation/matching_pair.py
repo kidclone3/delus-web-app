@@ -19,15 +19,15 @@ if __name__ == "__main__":
     while True:
         try:
             msg = worker.receive()
-            if msg is None:
-                continue
-            elif msg.get('work') != 'matching':
+
+            if msg.get('work') != 'matching':
                 continue
             if msg.get('type') == 'driver':
                 if msg.get('driver_id') in driver_id_set:
                     continue
                 del msg['work']
                 del msg['type']
+                logger.info(f"Driver {msg.get('name')} is waiting for matching")
                 driver_queue.append(msg)
                 driver_id_set.add(msg.get('driver_id'))
             elif msg.get('type') == 'customer':
@@ -35,6 +35,7 @@ if __name__ == "__main__":
                     continue
                 del msg['work']
                 del msg['type']
+                logger.info(f"Customer {msg.get('name')} is waiting for matching")
                 customer_queue.append(msg)
                 customer_id_set.add(msg.get('customer_id'))
 
@@ -64,4 +65,4 @@ if __name__ == "__main__":
                 time.sleep(0.2) # slowdown
 
         except Exception as e:
-            time.sleep(0.5)
+            time.sleep(0.1)

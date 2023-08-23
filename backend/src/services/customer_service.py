@@ -1,5 +1,5 @@
 from fastapi.encoders import jsonable_encoder
-from sqlalchemy import select, update
+from sqlalchemy import select, update, delete
 from sqlalchemy.orm import Session
 from sqlalchemy.dialects.mysql import insert as upsert
 
@@ -53,3 +53,17 @@ async def get_customer(customer_id: str, db):
     query = select(Customer).where(Customer.customer_id == customer_id)
     customer = (await db.execute(query)).scalars().first()
     return jsonable_encoder(customer)
+
+
+async def delete_customer(customer_id: str, db):
+    query = delete(Customer).where(Customer.customer_id == customer_id)
+    await db.execute(query)
+    await db.commit()
+    return {"message": f"Delete customer {customer_id} successfully"}
+
+
+async def update_customer_status(customer_id, active, db):
+    query = update(Customer).where(Customer.customer_id == customer_id).values(active=active)
+    await db.execute(query)
+    await db.commit()
+    return {"message": f"Update customer {customer_id} status to {active} successfully"}

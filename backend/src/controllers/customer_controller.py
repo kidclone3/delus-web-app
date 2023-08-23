@@ -54,10 +54,35 @@ async def update_destination(
 async def get_customer(
         customer_id: str,
         db: Session = Depends(get_session),
-) -> CustomerSchema | ExceptionMessage:
+) -> CustomerSchema | ExceptionMessage | None:
     try:
         customer = await customer_service.get_customer(customer_id, db)
         return customer
+    except HTTPException as exception:
+        message_exception = exception.detail
+        return {"message": message_exception}
+
+@router.delete("/id", status_code=status.HTTP_200_OK)
+async def delete_customer(
+        customer_id: str,
+        db: Session = Depends(get_session),
+) -> ExceptionMessage:
+    try:
+        message = await customer_service.delete_customer(customer_id, db)
+        return message
+    except HTTPException as exception:
+        message_exception = exception.detail
+        return {"message": message_exception}
+
+@router.patch("/id", status_code=status.HTTP_200_OK)
+async def update_customer_status(
+        customer_id: str,
+        active: bool,
+        db: Session = Depends(get_session),
+) -> ExceptionMessage:
+    try:
+        message = await customer_service.update_customer_status(customer_id, active, db)
+        return message
     except HTTPException as exception:
         message_exception = exception.detail
         return {"message": message_exception}

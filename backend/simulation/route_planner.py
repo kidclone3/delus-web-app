@@ -1,9 +1,12 @@
+import json
 import time
 
+import requests
+from fastapi.encoders import jsonable_encoder
 from loguru import logger
 
 from zeromq.worker import Worker
-from utils import directions
+from utils import directions, API_URL
 from methods import get_graph
 
 graph = get_graph()
@@ -32,31 +35,34 @@ def get_shortest_path(start_position, destination):
     return []
 
 
+def update_db(driver):
+    response = requests.post(f"{API_URL}/drivers", json=jsonable_encoder(driver))
+    logger.info(f"Update drivers path: {response.json()}")
 
 
 if __name__ == "__main__":
     logger.add("logs/route_planner.log", level="DEBUG")
 
-    start_position = (85,79)
-    destination = (43,28)
-    path = get_shortest_path(start_position, destination)
-    logger.info(f"Path: {path}")
-    # worker = Worker()
-    # while True:
-    #     try:
-    #         msg = worker.receive()
-    #         if msg is None:
-    #             continue
-    #         elif msg.get('work') != 'route':
-    #             continue
-    #         else:
-    #             # msg = driver dict
-    #             del msg['work']
-    #             start_position = msg.get('location')
-    #             destination = msg.get('destination')
-    #             path = get_shortest_path(start_position, destination)
-    #             logger.info(f"Path: {path}")
-    #
-    #     except Exception as e:
-    #         time.sleep(1)
+    worker = Worker()
+    while True:
+        try:
+            msg = worker.receive()
+
+            if msg.get('work') != 'route':
+                continue
+            else:
+                # msg = driver dict
+                del msg['work']
+                start_position = list(map(int, msg.get('location').split(':')))
+                destination = list(map(int, msg.get('destination').split(':')))
+                del msg['destination']
+                path = get_shortest_path(start_position, destination)
+                msg['path'] = json.dumps(path)
+
+                logger.info(f"Driver {msg.get('name')} has new path: {path}")
+                update_db(msg)
+
+            time.sleep(0.1)
+        except Exception as e:
+            time.sleep(0.2)
 

@@ -24,24 +24,24 @@ logger.add(sys.stdout, colorize=True, format="<green>{time}</green> <level>{mess
 DB_USER = os.environ.get("DB_USER")
 DB_PASSWORD = os.environ.get("DB_PASSWORD")
 
-
+running_drivers = []
+running_customers = []
 
 if __name__ == "__main__":
+    client = Client()
     try:
-        env = simpy.Environment()
-        # env = simpy.rt.RealtimeEnvironment(factor=0.5)
+        # env = simpy.Environment()
+        env = simpy.rt.RealtimeEnvironment(factor=0.5)
 
-        running_riders = []
-        for i in drivers:
-            rider = Driver(i, paths, env)
-            running_riders.append(rider)
+        for driver in drivers:
+            if driver.get('name') == 'William':
+                instance_driver = Driver(driver.get('name'), driver.get('driverId'), client,env)
+                running_drivers.append(instance_driver)
 
-        client = Client()
-
-        running_customers = []
         for cus in customers:
-            customer = Customer(cus.get('name'), cus.get('customerId'), client, env)
-            running_customers.append(customer)
+            if cus.get('name') == 'Paul':
+                instance_customer = Customer(cus.get('name'), cus.get('customerId'), running_drivers, client, env)
+                running_customers.append(instance_customer)
 
         env.run(until=500)
     except Exception as e:

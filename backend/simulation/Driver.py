@@ -50,7 +50,6 @@ class Driver:
     def update_db(self):
         data = self.to_dict()
         response = requests.post(f"{API_URL}/drivers", json=jsonable_encoder(data))
-        logger.info(f"Update driver status: {response.json()}")
 
     def get_customer_location(self, location='location'):
         response = requests.get(f"{API_URL}/customers/id", params={"customer_id": self.customer_id})
@@ -64,12 +63,16 @@ class Driver:
                     data = self.to_dict()
                     response = requests.post(f"{API_URL}/drivers", json=jsonable_encoder(data))
                     logger.info(f"Create new driver status: {response.json()}")
-                    msg = self.to_dict()
-                    msg['work'] = 'matching'
-                    msg['type'] = 'driver'
+
                     self.update_db()
-                    self.client.send(msg=msg)
+                    yield self.env.timeout(1)
                 logger.info(f"Driver {self.name} is idle")
+
+                msg = self.to_dict()
+                msg['work'] = 'matching'
+                msg['type'] = 'driver'
+                self.client.send(msg=msg)
+
                 yield env.timeout(1)
                 continue
             if self.status == 'pickup':
@@ -81,7 +84,7 @@ class Driver:
                 self.client.send(msg=msg)
                 # wait for customer to get in
                 flag = self.get_new_data()
-                while not flag:
+                while not flag or len(self.path) == 1:
                     flag = self.get_new_data()
                     yield env.timeout(1)
 
@@ -92,12 +95,18 @@ class Driver:
                     yield env.timeout(1)
 
             #     when customer get in
-                self.status = 'enroute'
-                self.update_db()
+                if self.location == self.path[-1]:
+                    yield env.timeout(5) # wait for customer to get in
+                    self.status = 'enroute'
+                    self.update_db()
+
                 yield env.timeout(1)
                 continue
             if self.status == 'enroute':
                 destination_location = self.get_customer_location('destination')
+                # remove customer
+                self.change_customer_active()
+
                 msg = self.to_dict()
                 msg['work'] = 'route'
                 msg['destination'] = f"{destination_location[0]}:{destination_location[1]}"
@@ -113,20 +122,34 @@ class Driver:
                     self.update_db()
                     yield env.timeout(1)
 
+                if self.location == self.path[-1]:
+                    yield env.timeout(5) # wait for customer to get out
+                    self.status = 'idle'
+                    self.customer_id = None
+                    self.update_db()
+                    self.remove_customer()
             # sleep(0.15)
             yield env.timeout(1)
 
+    def remove_customer(self):
+#         delete customer by id
+        response = requests.delete(f"{API_URL}/customers/id", params={"customer_id": self.customer_id})
+        logger.info(f"Delete customer: {response.json()}")
+
+    def change_customer_active(self):
+        response = requests.put(f"{API_URL}/customers/id", params={"customer_id": self.customer_id, 'active': False})
+        logger.info(f"Change customer active: {response.json()}")
 
 if __name__ == "__main__":
     try:
         # env = simpy.Environment()
         env = simpy.rt.RealtimeEnvironment(factor=1)
         logger.add("logs/Driver.log", level="DEBUG")
-        running_riders = []
+        running_drivers = []
         client = Client()
         for driver in drivers:
             driver_instance = Driver(driver.get('name'), driver.get('driverId'), client, env)
-            running_riders.append(driver_instance)
+            running_drivers.append(driver_instance)
 
         env.run(until=100)
     except Exception as e:
