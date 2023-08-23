@@ -24,14 +24,4 @@ async def get_all_rides(
         return {"message": message_exception}
 
 
-@router.post("/", status_code=status.HTTP_200_OK)
-async def create_ride(
-        ride: RideSchema,
-        db: Session = Depends(get_session),
-) -> ExceptionMessage:
-    try:
-        message = await ride_service.create_ride(ride, db)
-        return message
-    except HTTPException as exception:
-        message_exception = exception.detail
-        return {"message": message_exception}
+

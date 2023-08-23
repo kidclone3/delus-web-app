@@ -12,12 +12,12 @@ class Customer(BaseModel):
     __tablename__ = "customers"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    customer_id = Column(BINARY(length=16), unique=True, default=uuid.uuid4)
+    customer_id = Column(String(36), unique=True, default=uuid.uuid4)
     name = Column(String(255), nullable=False, unique=True)
     active = Column(Boolean, nullable=False, default=True)
     location = Column(String(5), nullable=False)
     destination = Column(String(5), nullable=True)
-    driver_id = Column(BINARY(length=16), unique=True, default=uuid.uuid4)
+    driver_id = Column(String(36),nullable=True, unique=True, default=uuid.uuid4)
 
 
 class CustomerSchema(ORJSONModel):
@@ -27,7 +27,7 @@ class CustomerSchema(ORJSONModel):
     active: bool
     location: str
     destination: str
-    driver_id: UUID4
+    driver_id: Optional[str]
 
 
 class ListCustomerSchema(ORJSONModel):

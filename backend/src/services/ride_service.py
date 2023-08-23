@@ -15,19 +15,4 @@ async def get_all_rides(db: Session):
     }
 
 
-async def create_ride(ride: RideSchema, db: Session):
-    query = upsert(Ride).values(
-        car_id=ride.car_id,
-        location=ride.location,
-        path=ride.path,
-    )
-    query = query.on_duplicate_key_update(
-        location = query.inserted.location,
-    )
-    try:
-        await db.execute(query)
-        await db.commit()
-        return {"message": "Create ride successfully"}
-    except Exception as exception:
-        await db.rollback()
-        raise exception
+

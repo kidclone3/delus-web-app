@@ -17,15 +17,18 @@ async def get_all_customers(db: Session):
 
 async def create_customer(customer: CustomerSchema, db: Session):
     query = upsert(Customer).values(
+        customer_id=customer.customer_id,
         name=customer.name,
         active=customer.active,
         location=customer.location,
-        destination=customer.destination
+        destination=customer.destination,
+        driver_id=customer.driver_id
     )
     query = query.on_duplicate_key_update(
         active=query.inserted.active,
         location=query.inserted.location,
-        destination=query.inserted.destination
+        destination=query.inserted.destination,
+        driver_id=query.inserted.driver_id
     )
     try:
         await db.execute(query)
@@ -36,12 +39,12 @@ async def create_customer(customer: CustomerSchema, db: Session):
         raise exception
 
 
-async def update_destination(name: str, destination: str, db):
-    query = update(Customer).where(Customer.name == name).values(destination=destination, active=True)
+async def update_destination(customer_id: str, destination: str, db):
+    query = update(Customer).where(Customer.customer_id == customer_id).values(destination=destination, active=True)
     try:
         await db.execute(query)
         await db.commit()
-        return {"message": f"Update destination of customer {name} to {destination} successfully"}
+        return {"message": f"Update destination of customer {customer_id} to {destination} successfully"}
     except Exception as exception:
         db.rollback()
         raise exception

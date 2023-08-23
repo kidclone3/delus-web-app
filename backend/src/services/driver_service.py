@@ -1,7 +1,8 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from fastapi.encoders import jsonable_encoder
-from src.models.drivers import Driver
+from src.models.drivers import Driver, DriverSchema
+from sqlalchemy.dialects.mysql import insert as upsert
 
 
 async def get_all_drivers(db:Session):
@@ -11,3 +12,28 @@ async def get_all_drivers(db:Session):
         'data': jsonable_encoder(list_drivers),
         'total': len(list_drivers)
     }
+
+async def create_driver(driver: DriverSchema, db: Session):
+    query = upsert(Driver).values(
+        driver_id = driver.driver_id,
+        name = driver.name,
+        status = driver.status,
+        location = driver.location,
+        path = driver.path,
+        path_index = driver.path_index,
+        customer_id = driver.customer_id
+    )
+    query = query.on_duplicate_key_update(
+        location = query.inserted.location,
+        path_index = query.inserted.path_index,
+        path = query.inserted.path,
+        status=query.inserted.status,
+        customer_id = query.inserted.customer_id
+    )
+    try:
+        await db.execute(query)
+        await db.commit()
+        return {"message": "Create/Update ride successfully"}
+    except Exception as exception:
+        await db.rollback()
+        raise exception
