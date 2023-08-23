@@ -1,29 +1,30 @@
 import json
-import os
 import random
 
 import requests
 import simpy
 from fastapi.encoders import jsonable_encoder
 from loguru import logger
-from data.data import paths, drivers
+from data.data import drivers
 from utils import road_nodes, API_URL
+from zeromq.client import Client
 
 
 class Driver:
-    def __init__(self, name, driver_id, env):
-        self.paths = paths
+    def __init__(self, name:str, driver_id:str, client: Client, env):
         self.name = name
         self.driver_id = driver_id
-        self.status = 'enroute'
+        self.status = 'idle'
         self.location = road_nodes[random.randint(0, len(road_nodes)-1)]
-        dummy_path = [self.location, [self.location[0]+1, self.location[1]]]
+        dummy_path = [self.location]
         self.path = dummy_path
         self.path_index = 0
         self.customer_id = None
 
+        self.client = client
         self.env = env
         self.env.process(self.run(self.env))
+        # self.run(self.env)
 
     def to_dict(self):
         return {
@@ -35,32 +36,96 @@ class Driver:
             "path_index": self.path_index,
             "customer_id": self.customer_id
         }
+    def get_new_data(self):
+        response = requests.get(f"{API_URL}/drivers/id", params={"driver_id": self.driver_id})
+        if response.text == 'null':
+            return False
+        new_driver = json.loads(response.text)
+        self.status = new_driver.get('status')
+        self.location = list(map(int, new_driver.get('location').split(':')))
+        self.path = json.loads(new_driver.get('path'))
+        self.path_index = new_driver.get('path_index')
+        self.customer_id = new_driver.get('customer_id')
+        return True
+    def update_db(self):
+        data = self.to_dict()
+        response = requests.post(f"{API_URL}/drivers", json=jsonable_encoder(data))
+        logger.info(f"Update driver status: {response.json()}")
 
+    def get_customer_location(self, location='location'):
+        response = requests.get(f"{API_URL}/customers/id", params={"customer_id": self.customer_id})
+        customer = json.loads(response.text)
+        return list(map(int, customer.get(location).split(':')))
     def run(self, env):
-
-
         while True:
+            if self.status == 'idle': # Wait for matching
+                flag = self.get_new_data()
+                if not flag:
+                    data = self.to_dict()
+                    response = requests.post(f"{API_URL}/drivers", json=jsonable_encoder(data))
+                    logger.info(f"Create new driver status: {response.json()}")
+                    msg = self.to_dict()
+                    msg['work'] = 'matching'
+                    msg['type'] = 'driver'
+                    self.update_db()
+                    self.client.send(msg=msg)
+                logger.info(f"Driver {self.name} is idle")
+                yield env.timeout(1)
+                continue
+            if self.status == 'pickup':
+                # get customer location:
+                customer_location = self.get_customer_location()
+                msg = self.to_dict()
+                msg['work'] = 'route'
+                msg['destination'] = f"{customer_location[0]}:{customer_location[1]}"
+                self.client.send(msg=msg)
+                # wait for customer to get in
+                flag = self.get_new_data()
+                while not flag:
+                    flag = self.get_new_data()
+                    yield env.timeout(1)
 
-            data = self.to_dict()
-            response = requests.post(f"{API_URL}/drivers", json=jsonable_encoder(data))
-            logger.info(f"Response: {response.json()}")
-            logger.debug(f"Driver Id: {self.name}, Location: {self.location}")
-            # time.sleep(0.15)
+                for i in range(len(self.path)):
+                    self.location = self.path[i]
+                    self.path_index = i
+                    self.update_db()
+                    yield env.timeout(1)
+
+            #     when customer get in
+                self.status = 'enroute'
+                self.update_db()
+                yield env.timeout(1)
+                continue
+            if self.status == 'enroute':
+                destination_location = self.get_customer_location('destination')
+                msg = self.to_dict()
+                msg['work'] = 'route'
+                msg['destination'] = f"{destination_location[0]}:{destination_location[1]}"
+
+                self.client.send(msg=msg)
+                flag = self.get_new_data()
+                while not flag:
+                    flag = self.get_new_data()
+                    yield env.timeout(1)
+                for i in range(len(self.path)):
+                    self.location = self.path[i]
+                    self.path_index = i
+                    self.update_db()
+                    yield env.timeout(1)
+
+            # sleep(0.15)
             yield env.timeout(1)
-            # if i == len(path) - 1:
-            #     selected = 'second' if selected == 'first' else 'first'
-            #     i = 0
-            # else:
-            #     i += 1
+
 
 if __name__ == "__main__":
     try:
         # env = simpy.Environment()
-        env = simpy.rt.RealtimeEnvironment(factor=0.5)
-
+        env = simpy.rt.RealtimeEnvironment(factor=1)
+        logger.add("logs/Driver.log", level="DEBUG")
         running_riders = []
+        client = Client()
         for driver in drivers:
-            driver_instance = Driver(driver.get('name'), driver.get('driverId'), env)
+            driver_instance = Driver(driver.get('name'), driver.get('driverId'), client, env)
             running_riders.append(driver_instance)
 
         env.run(until=100)

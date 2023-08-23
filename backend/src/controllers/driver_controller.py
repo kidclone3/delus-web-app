@@ -36,3 +36,15 @@ async def create_driver(
     except HTTPException as exception:
         message_exception = exception.detail
         return {"message": message_exception}
+
+@router.get("/id", status_code=status.HTTP_200_OK)
+async def get_driver(
+        driver_id: str,
+        db: Session = Depends(get_session),
+) -> DriverSchema | ExceptionMessage | None:
+    try:
+        driver = await driver_service.get_driver(driver_id, db)
+        return driver
+    except HTTPException as exception:
+        message_exception = exception.detail
+        return {"message": message_exception}

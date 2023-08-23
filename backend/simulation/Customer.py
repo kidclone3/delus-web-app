@@ -36,8 +36,8 @@ class Customer:
             if self.active:
                 new_active = decide(95)
             else:
-                # new_active = decide(5)
-                new_active = True
+                new_active = decide(5)
+                # new_active = True
 
             if self.active != new_active:
                 if new_active:
@@ -53,6 +53,7 @@ class Customer:
                 logger.debug(f"Customer {self.name} is activated: {self.active}")
                 logger.info(f"Response: {response.json()}")
                 self.client.send({
+                    "work": "destination",
                     "customer_id": self.customer_id,
                     "location": f"{self.location[0]}:{self.location[1]}"
                 })
@@ -70,6 +71,6 @@ if __name__ == "__main__":
             customer_instance = Customer(cus.get('name'), cus.get('customerId'), client, env)
             list_customers.append(customer_instance)
 
-        env.run(until=10)
+        env.run(until=100)
     except Exception as e:
         logger.error(e)

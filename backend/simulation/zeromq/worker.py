@@ -2,7 +2,7 @@ from datetime import datetime
 
 import zmq
 import os
-from settings import *
+from .settings import *
 from loguru import logger
 class Worker:
     def __init__(self):
@@ -26,12 +26,8 @@ class Worker:
             msg = self.socket.recv_pyobj(flags=zmq.NOBLOCK)
         except:
             raise zmq.Again()
-        self.logger.info(f"Receive message from client: {msg}")
-        self.type = msg.get('type', None)
-        if type == 'health_check':
-            self.logger.info("health_check")
-        else:
-            return msg
+
+        return msg
 
     def send(self, msg):
         print(f"Send message to client: {msg}")

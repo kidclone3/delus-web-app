@@ -29,6 +29,8 @@ if __name__ == "__main__":
                 continue
             if msg.get('type') == 'health_check':
                 worker.send({"status": "ok"})
+            elif msg.get('work') != 'destination':
+                continue
             else:
                 logger.info(f"Received name: {msg.get('name')}")
                 destination = get_destination(msg.get('location'))

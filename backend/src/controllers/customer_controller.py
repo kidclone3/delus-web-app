@@ -48,3 +48,16 @@ async def update_destination(
     except HTTPException as exception:
         message_exception = exception.detail
         return {"message": message_exception}
+
+
+@router.get("/id", status_code=status.HTTP_200_OK)
+async def get_customer(
+        customer_id: str,
+        db: Session = Depends(get_session),
+) -> CustomerSchema | ExceptionMessage:
+    try:
+        customer = await customer_service.get_customer(customer_id, db)
+        return customer
+    except HTTPException as exception:
+        message_exception = exception.detail
+        return {"message": message_exception}

@@ -48,3 +48,8 @@ async def update_destination(customer_id: str, destination: str, db):
     except Exception as exception:
         db.rollback()
         raise exception
+
+async def get_customer(customer_id: str, db):
+    query = select(Customer).where(Customer.customer_id == customer_id)
+    customer = (await db.execute(query)).scalars().first()
+    return jsonable_encoder(customer)
