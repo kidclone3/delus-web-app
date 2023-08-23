@@ -5,6 +5,7 @@ from sqlalchemy import *
 
 from src.models import BaseModel
 from src.utils.utils import ORJSONModel
+from pydantic import UUID4
 
 
 class Customer(BaseModel):
@@ -20,10 +21,13 @@ class Customer(BaseModel):
 
 
 class CustomerSchema(ORJSONModel):
+    id: Optional[int]
+    customer_id: Optional[str]
     name: str
     active: bool
     location: str
-    destination: Optional[str]
+    destination: str
+    driver_id: UUID4
 
 
 class ListCustomerSchema(ORJSONModel):

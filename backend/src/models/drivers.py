@@ -1,11 +1,11 @@
 import uuid
+from enum import IntEnum
+from typing import Optional
 
 from sqlalchemy import *
 
 from src.models import BaseModel
 from src.utils.utils import ORJSONModel
-
-from pydantic import EmailStr
 
 
 class Driver(BaseModel):
@@ -19,16 +19,23 @@ class Driver(BaseModel):
     path_index = Column(Integer, nullable=True)
     customer_id = Column(BINARY(length=16), unique=True, default=uuid.uuid4)
 
+class DriverStatusEnum(IntEnum):
+    idle = 0
+    pickup = 1
+    enroute = 2
 
 class DriverSchema(ORJSONModel):
-    id: int
+    id: Optional[int]
+    driver_id: Optional[str]
     name: str
-    email: EmailStr
-    phone: str
-    password: str
-    license_number: str
-
+    status: DriverStatusEnum = DriverStatusEnum.idle
+    location: str
+    path: str
+    path_index: int
+    customer_id: str
 
 class ListDriverSchema(ORJSONModel):
     data: list[DriverSchema]
     total: int
+
+
