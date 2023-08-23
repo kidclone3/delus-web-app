@@ -12,13 +12,10 @@ def push_message(data):
     global queue
     queue.append(data)
 
-def get_destination(msg):
-    name = msg.get('name')
-    location = msg.get('location')
+def get_destination(location):
     x, y = map(int, location.split(':'))
     dest_x, dest_y = generate_destination((x, y))
     dest = f"{dest_x}:{dest_y}"
-    print(dest)
     return dest
 
 
@@ -34,11 +31,11 @@ if __name__ == "__main__":
                 worker.send({"status": "ok"})
             else:
                 logger.info(f"Received name: {msg.get('name')}")
-                destination = get_destination(msg)
+                destination = get_destination(msg.get('location'))
                 logger.info(f"Destination: {destination}")
                 # logger.info(f"Destination: {destination}")
                 request = requests.post(url="http://localhost:8005/customers/update_destination", params={
-                    "name": msg.get('name'),
+                    "customer_id": msg.get('customer_id'),
                     "destination": destination
                 })
                 logger.info(f"Response: {request.json()}")

@@ -7,7 +7,7 @@ import time
 
 from Customer import Customer
 from Driver import Driver
-from data.data import paths
+from data.data import paths, customers, drivers
 
 import simpy
 import simpy.rt
@@ -28,19 +28,19 @@ DB_PASSWORD = os.environ.get("DB_PASSWORD")
 
 if __name__ == "__main__":
     try:
-        # env = simpy.Environment()
-        env = simpy.rt.RealtimeEnvironment(factor=0.5)
+        env = simpy.Environment()
+        # env = simpy.rt.RealtimeEnvironment(factor=0.5)
 
         running_riders = []
-        for i in range(3):
+        for i in drivers:
             rider = Driver(i, paths, env)
             running_riders.append(rider)
 
         client = Client()
-        list_customer = ['Alice', 'Michael', 'Kate', 'Paul', 'Susan', 'Andrew']
+
         running_customers = []
-        for name in list_customer:
-            customer = Customer(name, client, env)
+        for cus in customers:
+            customer = Customer(cus.get('name'), cus.get('customerId'), client, env)
             running_customers.append(customer)
 
         env.run(until=500)
