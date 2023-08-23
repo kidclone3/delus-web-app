@@ -1,3 +1,5 @@
+import uuid
+
 from sqlalchemy import *
 
 from src.models import BaseModel
@@ -9,11 +11,13 @@ from pydantic import EmailStr
 class Driver(BaseModel):
     __tablename__ = "drivers"
     id = Column(Integer, primary_key=True)
+    driver_id = Column(BINARY(length=16), unique=True, default=uuid.uuid4)
     name = Column(String(255), nullable=False)
-    email = Column(String(255), nullable=False)
-    phone = Column(String(255), nullable=False)
-    password = Column(String(255), nullable=False)
-    license_number = Column(String(255), nullable=False)
+    status = Column(Integer, default=True)
+    location = Column(String(5), nullable=False)
+    path = Column(Text(), nullable=True)
+    path_index = Column(Integer, nullable=True)
+    customer_id = Column(BINARY(length=16), unique=True, default=uuid.uuid4)
 
 
 class DriverSchema(ORJSONModel):
