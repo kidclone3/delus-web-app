@@ -1,39 +1,68 @@
 import json
 import os
+import random
 
 import requests
+import simpy
+from fastapi.encoders import jsonable_encoder
 from loguru import logger
-from data.data import paths
+from data.data import paths, drivers
+from utils import road_nodes, API_URL
+
+
 class Driver:
-    def __init__(self, id, paths, env):
+    def __init__(self, name, driver_id, env):
         self.paths = paths
-        self.id = id
+        self.name = name
+        self.driver_id = driver_id
+        self.status = 'enroute'
+        self.location = road_nodes[random.randint(0, len(road_nodes)-1)]
+        dummy_path = [self.location, [self.location[0]+1, self.location[1]]]
+        self.path = dummy_path
+        self.path_index = 0
+        self.customer_id = None
+
         self.env = env
-        env.process(self.run(env, self.id))
+        self.env.process(self.run(self.env))
 
-    def run(self, env, idx=0):
+    def to_dict(self):
+        return {
+            "name": self.name,
+            "driver_id": self.driver_id,
+            "status": self.status,
+            "location": f"{self.location[0]}:{self.location[1]}",
+            "path": json.dumps(self.path),
+            "path_index": self.path_index,
+            "customer_id": self.customer_id
+        }
 
-        # get the pid for the current process
-        pid = os.getpid()
-        logger.debug(f"Rider {self.id} is running on process {pid}")
-        i = paths[idx].get('i')
-        carId = paths[idx].get('carId')
-        selected = paths[idx].get('selected')
+    def run(self, env):
+
+
         while True:
-            path = paths[idx].get(selected)
-            x, y = path[i]
-            data = {
-                "car_id": carId,
-                "location": f"{x}:{y}",
-                "path": json.dumps(path)
-            }
-            response = requests.post("http://localhost:8005/rides", json=data)
+
+            data = self.to_dict()
+            response = requests.post(f"{API_URL}/drivers", json=jsonable_encoder(data))
             logger.info(f"Response: {response.json()}")
-            logger.debug(f"Car Id: {carId}, Location: {x}:{y}")
+            logger.debug(f"Driver Id: {self.name}, Location: {self.location}")
             # time.sleep(0.15)
             yield env.timeout(1)
-            if i == len(path) - 1:
-                selected = 'second' if selected == 'first' else 'first'
-                i = 0
-            else:
-                i += 1
+            # if i == len(path) - 1:
+            #     selected = 'second' if selected == 'first' else 'first'
+            #     i = 0
+            # else:
+            #     i += 1
+
+if __name__ == "__main__":
+    try:
+        # env = simpy.Environment()
+        env = simpy.rt.RealtimeEnvironment(factor=0.5)
+
+        running_riders = []
+        for driver in drivers:
+            driver_instance = Driver(driver.get('name'), driver.get('driverId'), env)
+            running_riders.append(driver_instance)
+
+        env.run(until=100)
+    except Exception as e:
+        logger.error(e)
