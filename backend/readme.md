@@ -30,4 +30,23 @@ Linux:
     uvicorn src.main:app --reload
 ```
 
+# Simulator microservice
+
+1. Setup python path:
+```bash
+    export PYTHONPATH=$PWD:$PWD/simulation:$PWD/simulation/zeromq
+```
+2. Run broker:
+```bash
+    python simulation/zeromq/broker.py
+```
+3. Run each services
+```bash
+    python simulation/services/...
+```
+4. Final run simulator
+```bash
+    python blabla.py
+```
+
 Note update: Maybe use docker in the future.
