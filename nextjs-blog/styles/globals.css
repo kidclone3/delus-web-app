@@ -79,7 +79,8 @@ code {
 }
 
 .map-inner {
-  
+  height: 100vh;
+  position: relative;
 }
 
 .map-inner svg {
