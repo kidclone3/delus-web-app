@@ -1,7 +1,6 @@
 import zmq
 
-from settings import *
-import os
+from .settings import *
 from datetime import datetime
 from loguru import logger
 
@@ -11,19 +10,19 @@ class Client:
         filename = os.path.join(LOG_FOLDER, "client_%s.log" % (datetime.now().strftime("%Y-%m-%d")))
         self.logger = logger
         self.logger.add(filename, format="{time} {level} {message}", level="INFO")
-
-    def send(self, msg):
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.PUSH)
-        # self.socket.setsockopt(zmq.LINGER, 0)
         self.socket.connect(f"tcp://{CLIENT_HOST}:{CLIENT_PORT}")
-        self.logger.info(f"Connecting client to port {CLIENT_PORT}")
+        self.logger.info(f"Connected client to port {CLIENT_PORT}")
+    def send(self, msg):
+        # self.socket.setsockopt(zmq.LINGER, 0)
+
+
         self.socket.send_pyobj(msg)
         # # Wait max 50 milliseconds for a reply, then complain
         # poller = zmq.Poller()
         # poller.register(self.socket, zmq.POLLIN)
         # poller.poll(50)
-        self.__del__()
         self.logger.info(f"Send message to client: {msg}")
 
     # destructor
