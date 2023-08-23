@@ -119,7 +119,7 @@ paths = [
     },
 ]
 
-driver = [
+drivers = [
     {'driverId': 'd0c600a2-298c-44dc-b9d7-85f790703959', 'name': 'Steven'},
     {'driverId': '1cfa84fc-1991-4a5d-8e66-ff067876ca57', 'name': 'Frank'},
     {'driverId': '768e9685-01f6-4a64-a718-68373ca2f9d0', 'name': 'William'},
