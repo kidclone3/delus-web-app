@@ -89,19 +89,18 @@ def get_closet_road_node(x: int, y: int, graph: Graph) -> CoordPair:
     seen = {(y, x)}
 
     while queue:
-        next_queue = []
+        y, x = queue.pop(0)
 
-        for y, x in queue:
-            for dx, dy in directions:
-                next_y = y + dy
-                next_x = x + dx
+        for dx, dy in directions:
+            next_y = y + dy
+            next_x = x + dx
 
-                if is_valid(next_y, next_x) and (next_y, next_x) not in seen:
-                    if graph[next_y][next_x] == 1:
-                        return next_x, next_y
-                    seen.add((next_y, next_x))
-                    next_queue.append((next_y, next_x))
-        queue = next_queue
+            if is_valid(next_y, next_x) and (next_y, next_x) not in seen:
+                if graph[next_y][next_x] == 1:
+                    return next_x, next_y
+                seen.add((next_y, next_x))
+                queue.append((next_y, next_x))
+
 
 
 def generate_destination(coord_pair: CoordPair) -> CoordPair:

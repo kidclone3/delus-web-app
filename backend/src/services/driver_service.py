@@ -34,7 +34,7 @@ async def create_driver(driver: DriverSchema, db: Session):
     try:
         await db.execute(query)
         await db.commit()
-        return {"message": "Create/Update ride successfully"}
+        return {"message": "Create/Update customer successfully"}
     except Exception as exception:
         await db.rollback()
         raise exception

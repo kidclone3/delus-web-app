@@ -6,17 +6,17 @@ import simpy
 from fastapi.encoders import jsonable_encoder
 from loguru import logger
 from data.data import drivers
-from utils import road_nodes, API_URL
-from zeromq.client import Client
+from utils import road_nodes, API_URL, ZMQ_CLIENT_HOST, ZMQ_CLIENT_PORT
+from zeromq.mdp_client import MajorDomoClient
 
 
 class Driver:
-    def __init__(self, name:str, driver_id:str, client: Client, env):
+    def __init__(self, name:str, driver_id:str, client: MajorDomoClient, env):
         self.name = name
         self.driver_id = driver_id
         self.status = 'idle'
         self.location = road_nodes[random.randint(0, len(road_nodes)-1)]
-        dummy_path = [self.location]
+        dummy_path = [self.location, [self.location[0]+1, self.location[1]]]
         self.path = dummy_path
         self.path_index = 0
         self.customer_id = None
@@ -69,24 +69,21 @@ class Driver:
                 logger.info(f"Driver {self.name} is idle")
 
                 msg = self.to_dict()
-                msg['work'] = 'matching'
                 msg['type'] = 'driver'
-                self.client.send(msg=msg)
+                self.client.send(service=b'matching', request=msg)
 
                 yield env.timeout(1)
                 continue
             if self.status == 'pickup':
                 # get customer location:
                 customer_location = self.get_customer_location()
+                self.get_new_data()
                 msg = self.to_dict()
-                msg['work'] = 'route'
                 msg['destination'] = f"{customer_location[0]}:{customer_location[1]}"
-                self.client.send(msg=msg)
-                # wait for customer to get in
-                flag = self.get_new_data()
-                while not flag or len(self.path) == 1:
-                    flag = self.get_new_data()
-                    yield env.timeout(1)
+                self.client.send(service='planning', request=msg)
+
+                ans = self.client.recv()
+                logger.info(f"{ans=}")
 
                 for i in range(len(self.path)):
                     self.location = self.path[i]
@@ -107,15 +104,13 @@ class Driver:
                 # remove customer
                 self.change_customer_active()
 
+                self.get_new_data()
                 msg = self.to_dict()
-                msg['work'] = 'route'
                 msg['destination'] = f"{destination_location[0]}:{destination_location[1]}"
+                self.client.send(service='planning', request=msg)
+                ans = self.client.recv()
+                logger.info(f"{ans=}")
 
-                self.client.send(msg=msg)
-                flag = self.get_new_data()
-                while not flag:
-                    flag = self.get_new_data()
-                    yield env.timeout(1)
                 for i in range(len(self.path)):
                     self.location = self.path[i]
                     self.path_index = i
@@ -126,6 +121,7 @@ class Driver:
                     yield env.timeout(5) # wait for customer to get out
                     self.status = 'idle'
                     self.customer_id = None
+                    self.path = [self.location, [self.location[0]+1, self.location[1]]] # Dummy path again
                     self.update_db()
                     self.remove_customer()
             # sleep(0.15)
@@ -142,11 +138,12 @@ class Driver:
 
 if __name__ == "__main__":
     try:
-        # env = simpy.Environment()
-        env = simpy.rt.RealtimeEnvironment(factor=1)
+        env = simpy.Environment()
+        # env = simpy.rt.RealtimeEnvironment(factor=1)
         logger.add("logs/Driver.log", level="DEBUG")
         running_drivers = []
-        client = Client()
+        # client = Client()
+        client = MajorDomoClient(f"tcp://{ZMQ_CLIENT_HOST}:5556", False)
         for driver in drivers:
             driver_instance = Driver(driver.get('name'), driver.get('driverId'), client, env)
             running_drivers.append(driver_instance)

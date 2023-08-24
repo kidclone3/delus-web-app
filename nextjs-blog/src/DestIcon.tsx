@@ -18,7 +18,7 @@ const shapes = `
   </g>
 `;
 
-const CustomerIcon = ({ x, y }: { x: number; y: number }) => (
+const DestIcon = ({ x, y }: { x: number; y: number }) => (
   <svg
     style={{ position: 'relative', zIndex: 2 }}
     x={x}
@@ -32,4 +32,4 @@ const CustomerIcon = ({ x, y }: { x: number; y: number }) => (
     dangerouslySetInnerHTML={{ __html: shapes }}
   />
 );
-export default CustomerIcon;
+export default DestIcon;

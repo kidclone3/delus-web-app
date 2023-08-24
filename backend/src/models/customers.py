@@ -26,7 +26,7 @@ class CustomerSchema(ORJSONModel):
     name: str
     active: bool
     location: str
-    destination: str
+    destination: Optional[str]
     driver_id: Optional[str]
 
 

@@ -6,8 +6,8 @@ from fastapi.encoders import jsonable_encoder
 from loguru import logger
 
 from methods import get_distance
-from utils import API_URL
-from zeromq.worker import Worker
+from utils import API_URL, ZMQ_SERVER_HOST, ZMQ_SERVER_PORT
+from zeromq.mdp_worker import MajorDomoWorker
 
 if __name__ == "__main__":
     logger.add("logs/matching_pair.log", level="INFO")
@@ -15,13 +15,10 @@ if __name__ == "__main__":
     driver_id_set = set()
     customer_queue = []
     customer_id_set = set()
-    worker = Worker()
+    worker = MajorDomoWorker(f"tcp://{ZMQ_SERVER_HOST}:5556", b"matching", False)
     while True:
         try:
-            msg = worker.receive()
-
-            if msg.get('work') != 'matching':
-                continue
+            msg = worker.recv()
             if msg.get('type') == 'driver':
                 if msg.get('driver_id') in driver_id_set:
                     continue
@@ -40,6 +37,8 @@ if __name__ == "__main__":
                 customer_id_set.add(msg.get('customer_id'))
 
             while len(driver_queue) > 0 and len(customer_queue) > 0:
+                logger.debug(f"len driver_queue: {len(driver_queue)}")
+                logger.debug(f"len customer_queue: {len(customer_queue)}")
                 customer = customer_queue.pop()
                 customer_location = list(map(int, customer.get('location').split(':')))
                 driver_queue.sort(key=lambda x: get_distance(list(map(int, x.get('location').split(':'))), customer_location))
@@ -61,8 +60,7 @@ if __name__ == "__main__":
 
                 driver_id_set.remove(driver.get('driver_id'))
                 customer_id_set.remove(customer.get('customer_id'))
-
-                time.sleep(0.2) # slowdown
+            time.sleep(0.8)
 
         except Exception as e:
-            time.sleep(0.1)
+            time.sleep(0.8)

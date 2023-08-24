@@ -59,25 +59,33 @@ class Customer:
         response = requests.post(f"{API_URL}/customers", json=data)
         logger.info(f"Update customer status: {response.json()}")
     def run(self):
-        # get the pid for the current process
         while True:
             new_active = False
             if self.active:
                 new_active = decide(60)
             else:
                 new_active = decide(40)
-                # new_active = True
 
             if self.active:
                 self.get_new_data()
                 yield self.env.timeout(1)
+
+                if self.destination == self.location:
+                    self.client.send({
+                        "work": "destination",
+                        "customer_id": self.customer_id,
+                        "location": f"{self.location[0]}:{self.location[1]}"
+                    })
+                    yield self.env.timeout(1)
+
+
                 if self.driver_id is None:
-            #         Send request to matching
                     msg = self.to_dict()
                     msg['work'] = 'matching'
                     msg['type'] = 'customer'
                     self.client.send(msg=msg)
                     yield self.env.timeout(1)
+
             elif self.active != new_active:
                 if new_active:
                     self.generate_location()
@@ -87,11 +95,16 @@ class Customer:
                 self.active = new_active
                 self.update_db()
                 yield self.env.timeout(1)
-                self.client.send({
-                    "work": "destination",
-                    "customer_id": self.customer_id,
-                    "location": f"{self.location[0]}:{self.location[1]}"
-                })
+
+                if self.destination == self.location:
+                    self.client.send({
+                        "work": "destination",
+                        "customer_id": self.customer_id,
+                        "location": f"{self.location[0]}:{self.location[1]}"
+                    })
+
+                    yield self.env.timeout(1)
+
                 yield self.env.timeout(1)
 
 

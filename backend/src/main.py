@@ -33,7 +33,7 @@ app.include_router(home_router, prefix="/home", tags=["Home"])
 app.include_router(chatbot_router, prefix="/chatbot", tags=["Chatbot"])
 app.include_router(olp_router, prefix="/olp", tags=["OLP"])
 app.include_router(driver_router, prefix="/drivers", tags=["Driver"])
-app.include_router(ride_router, prefix="/rides", tags=["Ride"])
+# app.include_router(ride_router, prefix="/rides", tags=["Ride"])
 app.include_router(customer_router, prefix="/customers", tags=["Customer"])
 
 if __name__ == "__main__":

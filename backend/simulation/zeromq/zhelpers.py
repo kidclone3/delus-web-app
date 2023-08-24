@@ -25,12 +25,14 @@ def dump(msg_or_socket):
         # it's a socket, call on current message
         msg = msg_or_socket.recv_multipart()
     else:
-        if len(msg_or_socket) == 4:
-            return
-        msg = msg_or_socket[-1]
-        print(f"{msg_or_socket=}")
-        response = pickle.loads(msg)
-        print(f"{response=}")
+        msg = msg_or_socket
+        print(f"{msg=}")
+        # if len(msg_or_socket) == 4:
+        #     return
+        # msg = msg_or_socket[-1]
+        # print(f"{msg_or_socket=}")
+        # response = pickle.loads(msg)
+        # print(f"{response=}")
     print("----------------------------------------")
 
 

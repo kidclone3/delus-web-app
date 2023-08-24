@@ -142,6 +142,11 @@ const GeoMap = () => {
           x={x * squareSize - squareSize * 0.75}
           y={y * squareSize - squareSize * 0.75}
         />
+        // <DestIcon
+        //   key={`d-${x}:${y}`}
+        //   x={x * squareSize - 5}
+        //   y={y * squareSize - 15}
+        // />
       );
     });
 

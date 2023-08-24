@@ -52,6 +52,7 @@ if __name__ == "__main__":
                 continue
             else:
                 # msg = driver dict
+                logger.info(f"From {msg.get('location')} to {msg.get('destination')}")
                 del msg['work']
                 start_position = list(map(int, msg.get('location').split(':')))
                 destination = list(map(int, msg.get('destination').split(':')))
@@ -62,7 +63,7 @@ if __name__ == "__main__":
                 logger.info(f"Driver {msg.get('name')} has new path: {path}")
                 update_db(msg)
 
-            time.sleep(0.1)
+            time.sleep(0.8)
         except Exception as e:
-            time.sleep(0.2)
+            time.sleep(0.8)
 

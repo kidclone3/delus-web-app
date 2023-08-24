@@ -14,8 +14,9 @@ class Client:
         self.socket = self.context.socket(zmq.PUSH)
         self.socket.connect(f"tcp://{CLIENT_HOST}:{CLIENT_PORT}")
         self.logger.info(f"Connected client to port {CLIENT_PORT}")
+        self.socket.setsockopt(zmq.LINGER, 0)
+
     def send(self, msg):
-        # self.socket.setsockopt(zmq.LINGER, 0)
 
 
         self.socket.send_pyobj(msg)
@@ -27,6 +28,11 @@ class Client:
 
     # destructor
     def __del__(self):
+        self.socket.close()
+        self.context.term()
+        self.logger.info("Close socket and context!!!")
+
+    def close(self):
         self.socket.close()
         self.context.term()
         self.logger.info("Close socket and context!!!")
