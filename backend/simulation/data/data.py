@@ -1,5 +1,3 @@
-from pprint import pprint
-
 paths = [
     {
         "carId": 'car1',

@@ -1,12 +1,11 @@
-import sys
-
-import pytest
 import os
+import sys
 
 SCRIPT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(os.path.dirname(SCRIPT_DIR))
 print(SCRIPT_DIR)
 from simulation.methods import *
+
 
 def test_nxn_matrix():
     grid_count = 3

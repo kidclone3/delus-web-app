@@ -1,13 +1,9 @@
-from typing import List
-
 from fastapi import APIRouter, Depends, status, HTTPException
-
 from sqlalchemy.orm import Session
 
 from src.models import get_session
 from src.models.customers import *
 from src.services import customer_service
-
 from src.utils.exceptions import ExceptionMessage
 
 router = APIRouter()
@@ -24,6 +20,7 @@ async def get_all_customers(
         message_exception = exception.detail
         return {"message": message_exception}
 
+
 @router.post("/", status_code=status.HTTP_200_OK)
 async def create_customer(
         customer: CustomerSchema,
@@ -35,6 +32,7 @@ async def create_customer(
     except HTTPException as exception:
         message_exception = exception.detail
         return {"message": message_exception}
+
 
 @router.post("/update_destination", status_code=status.HTTP_200_OK)
 async def update_destination(
@@ -62,6 +60,7 @@ async def get_customer(
         message_exception = exception.detail
         return {"message": message_exception}
 
+
 @router.delete("/id", status_code=status.HTTP_200_OK)
 async def delete_customer(
         customer_id: str,
@@ -73,6 +72,7 @@ async def delete_customer(
     except HTTPException as exception:
         message_exception = exception.detail
         return {"message": message_exception}
+
 
 @router.patch("/id", status_code=status.HTTP_200_OK)
 async def update_customer_status(

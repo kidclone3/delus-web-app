@@ -1,5 +1,4 @@
 import json
-import os
 import random
 from typing import List
 
@@ -11,12 +10,11 @@ from loguru import logger
 from Driver import Driver
 from data.data import customers
 from mdp_client import MajorDomoClient
-from zeromq.client import Client
 from utils import decide, road_nodes, API_URL, ZMQ_CLIENT_HOST
 
 
 class Customer:
-    def __init__(self, name, customer_id, list_driver:List[Driver], client, env):
+    def __init__(self, name, customer_id, list_driver: List[Driver], client, env):
         self.refreshInterval = 200
         self.name = name
         self.customer_id = customer_id
@@ -32,20 +30,21 @@ class Customer:
         self.logger.add(f"logs/Customer.log", level="DEBUG")
 
     def generate_location(self):
-        self.location = road_nodes[random.randint(0, len(road_nodes)-1)]
+        self.location = road_nodes[random.randint(0, len(road_nodes) - 1)]
         list_drivers_location = [driver.location for driver in self.list_driver]
 
         while self.location in list_drivers_location:
-            self.location = road_nodes[random.randint(0, len(road_nodes)-1)]
+            self.location = road_nodes[random.randint(0, len(road_nodes) - 1)]
+
     def to_dict(self):
         return {
-                    "name": self.name,
-                    "customer_id": self.customer_id,
-                    "active": self.active,
-                    "location": f"{self.location[0]}:{self.location[1]}",
-                    "destination": f"{self.destination[0]}:{self.destination[1]}",
-                    "driver_id": self.driver_id
-                }
+            "name": self.name,
+            "customer_id": self.customer_id,
+            "active": self.active,
+            "location": f"{self.location[0]}:{self.location[1]}",
+            "destination": f"{self.destination[0]}:{self.destination[1]}",
+            "driver_id": self.driver_id
+        }
 
     def get_new_data(self):
         response = requests.get(f"{API_URL}/customers/id", params={"customer_id": self.customer_id})
@@ -115,6 +114,7 @@ class Customer:
             yield self.env.timeout(1)
             logger.info(f"current time {self.env.now}")
             # time.sleep(0.5)
+
 
 if __name__ == "__main__":
     try:

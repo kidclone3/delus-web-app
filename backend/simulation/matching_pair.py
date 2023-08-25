@@ -1,4 +1,3 @@
-import json
 import time
 
 import orjson
@@ -7,7 +6,7 @@ from fastapi.encoders import jsonable_encoder
 from loguru import logger
 
 from methods import get_distance
-from utils import API_URL, ZMQ_SERVER_HOST, ZMQ_SERVER_PORT
+from utils import API_URL, ZMQ_SERVER_HOST
 from zeromq.mdp_worker import MajorDomoWorker
 
 if __name__ == "__main__":
@@ -48,7 +47,8 @@ if __name__ == "__main__":
                 logger.debug(f"len customer_queue: {len(customer_queue)}")
                 customer = customer_queue.pop()
                 customer_location = list(map(int, customer.get('location').split(':')))
-                driver_queue.sort(key=lambda x: get_distance(list(map(int, x.get('location').split(':'))), customer_location))
+                driver_queue.sort(
+                    key=lambda x: get_distance(list(map(int, x.get('location').split(':'))), customer_location))
                 driver = driver_queue.pop()
 
                 logger.info(f"""

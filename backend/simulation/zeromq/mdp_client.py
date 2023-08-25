@@ -1,10 +1,8 @@
 import time
 
 import orjson
-from loguru import logger
-import pickle
-
 import zmq
+from loguru import logger
 
 import MDP
 from zhelpers import dump
@@ -16,6 +14,8 @@ Implements the MDP/Worker spec at http:#rfc.zeromq.org/spec:7.
 Author: Min RK <benjaminrk@gmail.com>
 Based on Java example by Arkadiusz Orzechowski
 """
+
+
 class MajorDomoClient(object):
     """Majordomo Protocol Client API, Python version.
 
@@ -36,7 +36,6 @@ class MajorDomoClient(object):
         self.poller = zmq.Poller()
         self.logger = logger
         self.reconnect_to_broker()
-
 
     def reconnect_to_broker(self):
         """Connect or reconnect to broker"""
@@ -70,7 +69,7 @@ class MajorDomoClient(object):
             try:
                 items = self.poller.poll(self.timeout)
             except KeyboardInterrupt:
-                break # interrupted
+                break  # interrupted
 
             if items:
                 msg = self.client.recv_multipart()
@@ -102,6 +101,7 @@ class MajorDomoClient(object):
 
     def destroy(self):
         self.ctx.destroy()
+
 
 if __name__ == "__main__":
     def main():
@@ -137,4 +137,6 @@ if __name__ == "__main__":
                     break
             count += 1
         print("%i requests/replies processed" % count)
+
+
     main()

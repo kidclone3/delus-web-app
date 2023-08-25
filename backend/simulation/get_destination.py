@@ -1,21 +1,14 @@
 import time
-from hashlib import md5
 
 import orjson
 import requests
-from fastapi.encoders import jsonable_encoder
 
 from mdp_worker import MajorDomoWorker
 from methods import *
 from utils import ZMQ_SERVER_HOST, API_URL
 
-queue = []
-from zeromq.worker import Worker
 from loguru import logger
 
-def push_message(data):
-    global queue
-    queue.append(data)
 
 def get_destination(location):
     x, y = map(int, location.split(':'))

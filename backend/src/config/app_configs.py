@@ -1,10 +1,11 @@
 from typing import Any, List, Dict
+
 from pydantic import BaseSettings
+
 from src.constants import Environment
 
 
 class Setting(BaseSettings):
-
     ENVIRONMENT: Environment = Environment.TESTING
     APP_VERSION: str = "0.0.1"
     DATABASE_URL: str

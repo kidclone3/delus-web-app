@@ -1,8 +1,9 @@
 import math
 import random
 from typing import List, Tuple, Optional
-from data.obstacles import obstacles
+
 from config import *
+from data.obstacles import obstacles
 
 Obstacle = Tuple[int, int, int, int, Optional[str]]
 Obstacles = List[Obstacle]
@@ -102,7 +103,6 @@ def get_closet_road_node(x: int, y: int, graph: Graph) -> CoordPair:
                 queue.append((next_y, next_x))
 
 
-
 def generate_destination(coord_pair: CoordPair) -> CoordPair:
     graph = get_graph()
 
@@ -115,10 +115,12 @@ def generate_destination(coord_pair: CoordPair) -> CoordPair:
     destination = get_closet_road_node(dest_x, dest_y, graph)
     return destination
 
+
 def get_distance(coordsA, coordsB):
     xA, yA = coordsA
     xB, yB = coordsB
     return math.pow(xB - xA, 2) + math.pow(yB - yA, 2)
+
 
 if __name__ == "__main__":
     obstacles_s = get_obstacles(obstacles)

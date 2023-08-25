@@ -1,7 +1,7 @@
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy import select, update, delete
-from sqlalchemy.orm import Session
 from sqlalchemy.dialects.mysql import insert as upsert
+from sqlalchemy.orm import Session
 
 from src.models.customers import Customer, CustomerSchema
 
@@ -46,6 +46,7 @@ async def update_destination(customer_id: str, destination: str, db):
     except Exception as exception:
         db.rollback()
         raise exception
+
 
 async def get_customer(customer_id: str, db):
     query = select(Customer).where(Customer.customer_id == customer_id)

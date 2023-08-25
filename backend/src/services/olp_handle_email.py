@@ -1,7 +1,7 @@
-from src.models.olp.customer import *
-from sqlalchemy.orm import Session
-from src.utils.exceptions import *
 from fastapi.encoders import jsonable_encoder
+from sqlalchemy.orm import Session
+
+from src.models.olp.customer import *
 
 
 async def check_duplicate_email(email: str, db: Session):
@@ -18,7 +18,6 @@ async def get_all_email(db: Session):
 
 
 async def create_email(user: CustomerSchema, db: Session):
-
     check_existed = await check_duplicate_email(user.email, db)
     if check_existed:
         raise HTTPException(status_code=400, detail="Email already exists")
@@ -30,7 +29,8 @@ async def create_email(user: CustomerSchema, db: Session):
     await db.commit()
     return {"message": "Create email successfully"}
 
-async def send_emails(db:Session):
+
+async def send_emails(db: Session):
     query = select(Customer.email)
     list_email = (await db.execute(query)).scalars().all()
     print(list_email)

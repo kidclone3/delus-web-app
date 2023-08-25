@@ -6,10 +6,10 @@ from __future__ import print_function
 
 import binascii
 import os
-import pickle
 from random import randint
 
 import zmq
+
 
 def socket_set_hwm(socket, hwm=-1):
     """libzmq 2/3/4 compatible sethwm"""
@@ -38,7 +38,6 @@ def dump(msg_or_socket):
     print("----------------------------------------")
 
 
-
 def set_id(zsocket):
     """Set simple random printable identity on socket"""
     identity = u"%04x-%04x" % (randint(0, 0x10000), randint(0, 0x10000))
@@ -59,4 +58,4 @@ def zpipe(ctx):
     iface = "inproc://%s" % binascii.hexlify(os.urandom(8))
     a.bind(iface)
     b.connect(iface)
-    return a,b
+    return a, b

@@ -6,7 +6,6 @@ from sqlalchemy.orm import Session
 from src.models import get_session
 from src.models.olp.customer import CustomerSchema, ListCustomerSchema, ListEmailSchema
 from src.services import olp_handle_email
-
 from src.utils.exceptions import ExceptionMessage
 
 router = APIRouter()
@@ -14,7 +13,7 @@ router = APIRouter()
 
 @router.get("/", status_code=status.HTTP_200_OK)
 async def get_all_email(
-    db: Session = Depends(get_session),
+        db: Session = Depends(get_session),
 ) -> Union[ListCustomerSchema, ExceptionMessage]:
     # TODO: admin check
     try:
@@ -27,8 +26,8 @@ async def get_all_email(
 
 @router.post("/", status_code=status.HTTP_200_OK)
 async def create_email(
-    user: CustomerSchema,
-    db: Session = Depends(get_session),
+        user: CustomerSchema,
+        db: Session = Depends(get_session),
 ) -> ExceptionMessage:
     try:
         message = await olp_handle_email.create_email(user, db)
@@ -37,10 +36,11 @@ async def create_email(
         message_exception = exception.detail
         return {"message": message_exception}
 
+
 @router.get("/send_emails", status_code=status.HTTP_200_OK)
 async def send_emails(
-        db:Session = Depends(get_session)
-)-> ListEmailSchema | ExceptionMessage:
+        db: Session = Depends(get_session)
+) -> ListEmailSchema | ExceptionMessage:
     # TODO: admin check
     try:
         list_email = await olp_handle_email.send_emails(db)

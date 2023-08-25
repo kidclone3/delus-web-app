@@ -1,9 +1,8 @@
+from pydantic import EmailStr
 from sqlalchemy import *
 
 from src.models import BaseModel
 from src.utils.utils import ORJSONModel
-
-from pydantic import EmailStr
 
 
 class Customer(BaseModel):
@@ -24,6 +23,7 @@ class CustomerSchema(ORJSONModel):
 class ListCustomerSchema(ORJSONModel):
     data: list[CustomerSchema]
     total: int
+
 
 class ListEmailSchema(ORJSONModel):
     data: list[EmailStr]

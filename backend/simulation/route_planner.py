@@ -7,15 +7,18 @@ from fastapi.encoders import jsonable_encoder
 from loguru import logger
 
 from mdp_worker import MajorDomoWorker
-from zeromq.worker import Worker
-from utils import directions, API_URL, ZMQ_SERVER_HOST
 from methods import get_graph
+from utils import directions, API_URL, ZMQ_SERVER_HOST
 
 graph = get_graph()
+
+
 def is_valid(x, y):
     return 0 <= x < len(graph) and 0 <= y < len(graph[0]) and graph[y][x] == 1
+
+
 def get_shortest_path(start_position, destination):
-#     BFS algorithm for find path
+    #     BFS algorithm for find path
     col, row = start_position
     q = [[start_position]]
     visited = set()
@@ -64,4 +67,3 @@ if __name__ == "__main__":
 
         except Exception as e:
             time.sleep(0.1)
-

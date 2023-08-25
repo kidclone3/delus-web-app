@@ -1,24 +1,15 @@
-import asyncio
-import json
 import os
-import random
 import sys
-import time
 
 import pymysql
+import simpy.rt
+from dotenv import load_dotenv
+from loguru import logger
 
 from Customer import Customer
 from Driver import Driver
-from data.data import paths, customers, drivers
-
-import simpy
-import simpy.rt
-from loguru import logger
-from dotenv import load_dotenv
-
+from data.data import customers, drivers
 from mdp_client import MajorDomoClient
-from utils import ZMQ_CLIENT_HOST
-from zeromq.client import Client
 
 load_dotenv()
 
@@ -39,7 +30,6 @@ if __name__ == "__main__":
         conn.commit()
         logger.info("Delete all drivers and customers")
         conn.close()
-
 
     try:
         # env = simpy.Environment()

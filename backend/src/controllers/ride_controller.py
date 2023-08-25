@@ -1,13 +1,10 @@
-from typing import Dict, Any
+from typing import Any
 
 from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.orm import Session
 
 from src.models import get_session
-from src.models.rides import RideSchema, ListRideSchema
 from src.services import ride_service
-
-from src.utils.exceptions import ExceptionMessage
 
 router = APIRouter()
 
@@ -22,6 +19,3 @@ async def get_all_rides(
     except HTTPException as exception:
         message_exception = exception.detail
         return {"message": message_exception}
-
-
-

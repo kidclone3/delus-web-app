@@ -1,9 +1,10 @@
+import os
+import shutil
 import uuid
 
-from fastapi import UploadFile, File
+from fastapi import UploadFile
 from sqlalchemy.orm import Session
-import shutil
-import os
+
 
 async def upload_file(
         file: UploadFile,

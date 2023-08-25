@@ -1,8 +1,9 @@
-from sqlalchemy import select
-from sqlalchemy.orm import Session
 from fastapi.encoders import jsonable_encoder
-from src.models.drivers import Driver, DriverSchema
+from sqlalchemy import select
 from sqlalchemy.dialects.mysql import insert as upsert
+from sqlalchemy.orm import Session
+
+from src.models.drivers import Driver, DriverSchema
 
 
 async def get_all_drivers(db: Session):

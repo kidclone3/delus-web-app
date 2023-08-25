@@ -5,9 +5,8 @@ Revises: 2464678c9a7d
 Create Date: 2023-08-23 01:32:08.229959
 
 """
-from alembic import op
 import sqlalchemy as sa
-
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = '595e1ba10911'
@@ -34,15 +33,15 @@ def upgrade() -> None:
 
     # create table drivers
     op.create_table("drivers",
-        sa.Column("id", sa.Integer, primary_key=True, autoincrement=True),
-        sa.Column("driver_id", sa.String(36), unique=True),
-        sa.Column("name", sa.String(255), nullable=False, unique=True),
-        sa.Column("status", sa.String(10), default=True),
-        sa.Column("location", sa.String(5), nullable=False),
-        sa.Column("path", sa.Text(), nullable=True),
-        sa.Column("path_index", sa.Integer, nullable=True),
-        sa.Column("customer_id", sa.String(36), unique=True)
-    )
+                    sa.Column("id", sa.Integer, primary_key=True, autoincrement=True),
+                    sa.Column("driver_id", sa.String(36), unique=True),
+                    sa.Column("name", sa.String(255), nullable=False, unique=True),
+                    sa.Column("status", sa.String(10), default=True),
+                    sa.Column("location", sa.String(5), nullable=False),
+                    sa.Column("path", sa.Text(), nullable=True),
+                    sa.Column("path_index", sa.Integer, nullable=True),
+                    sa.Column("customer_id", sa.String(36), unique=True)
+                    )
 
 
 def downgrade() -> None:

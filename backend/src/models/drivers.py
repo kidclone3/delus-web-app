@@ -1,5 +1,4 @@
 import uuid
-from enum import Enum
 from typing import Optional
 
 from sqlalchemy import *
@@ -19,10 +18,12 @@ class Driver(BaseModel):
     path_index = Column(Integer, nullable=True)
     customer_id = Column(String(36), nullable=True, unique=True, default=uuid.uuid4)
 
+
 class DriverStatusEnum(str, Enum):
     idle = 'idle'
     pickup = 'pickup'
     enroute = 'enroute'
+
 
 class DriverSchema(ORJSONModel):
     id: Optional[int]
@@ -34,8 +35,7 @@ class DriverSchema(ORJSONModel):
     path_index: int
     customer_id: Optional[str]
 
+
 class ListDriverSchema(ORJSONModel):
     data: list[DriverSchema]
     total: int
-
-

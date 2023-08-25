@@ -1,9 +1,8 @@
 from fastapi.encoders import jsonable_encoder
-from sqlalchemy import select, insert
-from sqlalchemy.dialects.mysql import insert as upsert
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from src.models.rides import Ride, RideSchema
+from src.models.rides import Ride
 
 
 async def get_all_rides(db: Session):
@@ -13,6 +12,3 @@ async def get_all_rides(db: Session):
         'data': jsonable_encoder(list_rides),
         'total': len(list_rides)
     }
-
-
-
