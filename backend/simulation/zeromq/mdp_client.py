@@ -1,3 +1,6 @@
+import time
+
+import orjson
 from loguru import logger
 import pickle
 
@@ -45,7 +48,7 @@ class MajorDomoClient(object):
         self.client.connect(self.broker)
         self.poller.register(self.client, zmq.POLLIN)
         if self.verbose:
-            self.logger.info("I: connecting to broker at %s...", self.broker)
+            self.logger.info("I: connecting to broker at %s..." % self.broker)
 
     def send(self, service, request):
         """Send request to broker and get reply by hook or crook.
@@ -57,7 +60,7 @@ class MajorDomoClient(object):
             request = [request]
         request = [MDP.C_CLIENT, service] + request
         if self.verbose:
-            self.logger.warning("I: send request to '%s' service: ", service)
+            self.logger.warning("I: send request to '%s' service: " % service)
             dump(request)
         reply = None
 
@@ -109,16 +112,18 @@ if __name__ == "__main__":
             request = {
                 "message": "Hellooooooo",
             }
-            send_request = pickle.dumps(request)
+            # send_request = pickle.dumps(request)
             # request2 = {
             #     "message": "Bruhhhhhhhh",
             # }
+            send_request = orjson.dumps(request)
             try:
                 client.send(b"matching", send_request)
                 # client.send(b"bruh", request2)
             except KeyboardInterrupt:
                 print("send interrupted, aborting")
                 return
+            time.sleep(1)
 
         count = 0
         while count < requests:

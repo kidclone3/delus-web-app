@@ -27,8 +27,6 @@ async def create_customer(customer: CustomerSchema, db: Session):
     query = query.on_duplicate_key_update(
         active=query.inserted.active,
         location=query.inserted.location,
-        destination=query.inserted.destination,
-        driver_id=query.inserted.driver_id
     )
     try:
         await db.execute(query)

@@ -5,10 +5,8 @@ Implements the MDP/Worker spec at http:#rfc.zeromq.org/spec:7.
 Author: Min RK <benjaminrk@gmail.com>
 Based on Java example by Arkadiusz Orzechowski
 """
-import pickle
-
+import orjson
 from loguru import logger
-import sys
 import time
 import zmq
 
@@ -63,7 +61,7 @@ class MajorDomoWorker(object):
         self.worker.connect(self.broker)
         self.poller.register(self.worker, zmq.POLLIN)
         if self.verbose:
-            self.logger.info("I: connecting to broker at %s...", self.broker)
+            self.logger.info("I: connecting to broker at %s..." % self.broker)
 
         # Register service with broker
         self.send_to_broker(MDP.W_READY, self.service, [])
@@ -88,7 +86,7 @@ class MajorDomoWorker(object):
 
         msg = [b'', MDP.W_WORKER, command] + msg
         if self.verbose:
-            self.logger.info("I: sending %s to broker", command)
+            self.logger.info("I: sending %s to broker" % command)
             dump(msg)
         self.worker.send_multipart(msg)
 
@@ -102,6 +100,7 @@ class MajorDomoWorker(object):
             assert self.reply_to is not None
             reply = [self.reply_to, b''] + reply
             self.send_to_broker(MDP.W_REPLY, msg=reply)
+            self.logger.info(f"I: send reply to broker: {reply}")
 
         self.expect_reply = True
 
@@ -174,14 +173,16 @@ class MajorDomoWorker(object):
 
 def main():
     verbose = True
-    worker = MajorDomoWorker("tcp://localhost:5555", b"matching", verbose)
+    worker = MajorDomoWorker("tcp://localhost:5556", b"matching", verbose)
     reply = None
     while True:
         request = worker.recv(reply)
         if request is None:
-            break  # Worker was interrupted
-        reply = request  # Echo is complex... :-)
-        worker.logger.info(f"Received request: {request}")
+            worker.logger.info("I: interrupt received, killing worker...")
+            break  # Worker was interruptedC
+        reply = [b'Reply']  # Echo is complex... :-)
+        data = orjson.loads(request[0])
+        worker.logger.info(f"Received request: {data=}")
 
 
 if __name__ == '__main__':

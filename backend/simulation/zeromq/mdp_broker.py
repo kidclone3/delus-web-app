@@ -130,6 +130,7 @@ class MajorDomoBroker(object):
         service = msg.pop(0)
         # Set reply return address to client sender
         msg = [sender, b''] + msg
+        self.logger.info("B: Process a request coming from a client: %s" % service)
         if service.startswith(self.INTERNAL_SERVICE_PREFIX):
             self.service_internal(service, msg)
         else:
@@ -145,6 +146,8 @@ class MajorDomoBroker(object):
         worker_ready = hexlify(sender) in self.workers
 
         worker = self.require_worker(sender)
+
+        self.logger.info("B: Process message sent to us by a worker: %s" % command)
 
         if (MDP.W_READY == command):
             assert len(msg) >= 1 # At least, a service name
@@ -200,7 +203,7 @@ class MajorDomoBroker(object):
             worker = Worker(identity, address, self.HEARTBEAT_EXPIRY)
             self.workers[identity] = worker
             if self.verbose:
-                self.logger.info("I: registering new worker: %s", identity)
+                self.logger.info("I: registering new worker: %s" % identity)
 
         return worker
 
@@ -220,7 +223,7 @@ class MajorDomoBroker(object):
         We use a single socket for both clients and workers.
         """
         self.socket.bind(endpoint)
-        self.logger.info("I: MDP broker/0.1.1 is active at %s", endpoint)
+        self.logger.info("I: MDP broker/0.1.1 is active at %s" % endpoint)
 
     def service_internal(self, service, msg):
         """Handle internal service according to 8/MMI specification"""
@@ -250,7 +253,7 @@ class MajorDomoBroker(object):
         while self.waiting:
             w = self.waiting[0]
             if w.expiry < time.time():
-                self.logger.info("I: deleting expired worker: %s", w.identity)
+                self.logger.info("I: deleting expired worker: %s" % w.identity)
                 self.delete_worker(w,False)
                 self.waiting.pop(0)
             else:
@@ -270,6 +273,8 @@ class MajorDomoBroker(object):
         if msg is not None:# Queue message if any
             service.requests.append(msg)
         self.purge_workers()
+        logger.info(f"Length of waiting workers: {len(service.waiting)}")
+        logger.info(f"Length of requests: {len(service.requests)}")
         while service.waiting and service.requests:
             msg = service.requests.pop(0)
             worker = service.waiting.pop(0)
@@ -304,7 +309,7 @@ def main():
     """create and start new broker"""
     verbose = True
     broker = MajorDomoBroker(verbose)
-    broker.bind("tcp://*:5555")
+    broker.bind("tcp://*:5556")
     broker.mediate()
 
 if __name__ == '__main__':

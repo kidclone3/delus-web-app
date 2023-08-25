@@ -3,14 +3,16 @@ import os
 import random
 from typing import List
 
+import orjson
 import requests
 import simpy
 from loguru import logger
 
 from Driver import Driver
 from data.data import customers
+from mdp_client import MajorDomoClient
 from zeromq.client import Client
-from utils import decide, road_nodes, API_URL
+from utils import decide, road_nodes, API_URL, ZMQ_CLIENT_HOST
 
 
 class Customer:
@@ -26,6 +28,8 @@ class Customer:
         self.client = client
         self.env.process(self.run())
         self.list_driver = list_driver
+        self.logger = logger
+        self.logger.add(f"logs/Customer.log", level="DEBUG")
 
     def generate_location(self):
         self.location = road_nodes[random.randint(0, len(road_nodes)-1)]
@@ -58,65 +62,65 @@ class Customer:
         data = self.to_dict()
         response = requests.post(f"{API_URL}/customers", json=data)
         logger.info(f"Update customer status: {response.json()}")
+
+    def check_driver(self):
+        if self.driver_id == None:
+            data = self.to_dict()
+            data['type'] = 'customer'
+            self.client.send(b'matching', orjson.dumps(data))
+            return False
+        return True
+
     def run(self):
         while True:
             new_active = False
-            if self.active:
-                new_active = decide(60)
+            if not self.active:
+                new_active = decide(95)
             else:
-                new_active = decide(40)
-
+                new_active = decide(5)
             if self.active:
-                self.get_new_data()
+                while self.check_driver():
+                    self.update_db()
+                    yield self.env.timeout(1)
                 yield self.env.timeout(1)
-
-                if self.destination == self.location:
-                    self.client.send({
-                        "work": "destination",
-                        "customer_id": self.customer_id,
-                        "location": f"{self.location[0]}:{self.location[1]}"
-                    })
-                    yield self.env.timeout(1)
-
-
-                if self.driver_id is None:
-                    msg = self.to_dict()
-                    msg['work'] = 'matching'
-                    msg['type'] = 'customer'
-                    self.client.send(msg=msg)
-                    yield self.env.timeout(1)
-
-            elif self.active != new_active:
+                continue
+            if self.active != new_active:
                 if new_active:
                     self.generate_location()
+                    yield self.env.timeout(1)
                     logger.debug(f"Customer {self.name} is activated at {self.location}")
                     self.destination = self.location
-
-                self.active = new_active
-                self.update_db()
-                yield self.env.timeout(1)
-
-                if self.destination == self.location:
-                    self.client.send({
+                    self.active = new_active
+                    self.update_db()
+                    yield self.env.timeout(1)
+                    self.client.send(b'destination', orjson.dumps({
                         "work": "destination",
                         "customer_id": self.customer_id,
                         "location": f"{self.location[0]}:{self.location[1]}"
-                    })
-
+                    }))
+                    yield self.env.timeout(1)
+                if new_active or self.driver_id is None:
+                    data = self.to_dict()
+                    data['type'] = 'customer'
+                    self.client.send(b'matching', orjson.dumps(data))
                     yield self.env.timeout(1)
 
                 yield self.env.timeout(1)
-
-
+            else:
+                if self.active != new_active:
+                    self.active = new_active
+                    self.update_db()
+                yield self.env.timeout(1)
 
             yield self.env.timeout(1)
+            logger.info(f"current time {self.env.now}")
             # time.sleep(0.5)
 
 if __name__ == "__main__":
     try:
-        # env = simpy.Environment()
-        env = simpy.rt.RealtimeEnvironment(factor=1)
-        client = Client()
+        env = simpy.Environment()
+        # env = simpy.rt.RealtimeEnvironment(factor=1)
+        client = MajorDomoClient(f"tcp://{ZMQ_CLIENT_HOST}:5556", True)
         list_customers = []
         for cus in customers:
             customer_instance = Customer(cus.get('name'), cus.get('customerId'), [], client, env)

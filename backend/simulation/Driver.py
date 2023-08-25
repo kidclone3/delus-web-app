@@ -1,6 +1,7 @@
 import json
 import random
 
+import orjson
 import requests
 import simpy
 from fastapi.encoders import jsonable_encoder
@@ -50,6 +51,7 @@ class Driver:
     def update_db(self):
         data = self.to_dict()
         response = requests.post(f"{API_URL}/drivers", json=jsonable_encoder(data))
+        return response
 
     def get_customer_location(self, location='location'):
         response = requests.get(f"{API_URL}/customers/id", params={"customer_id": self.customer_id})
@@ -60,30 +62,32 @@ class Driver:
             if self.status == 'idle': # Wait for matching
                 flag = self.get_new_data()
                 if not flag:
-                    data = self.to_dict()
-                    response = requests.post(f"{API_URL}/drivers", json=jsonable_encoder(data))
+                    response = self.update_db()
                     logger.info(f"Create new driver status: {response.json()}")
-
-                    self.update_db()
                     yield self.env.timeout(1)
+
                 logger.info(f"Driver {self.name} is idle")
 
                 msg = self.to_dict()
                 msg['type'] = 'driver'
-                self.client.send(service=b'matching', request=msg)
+                self.client.send(service=b'matching', request=orjson.dumps(msg))
 
                 yield env.timeout(1)
-                continue
+
             if self.status == 'pickup':
                 # get customer location:
                 customer_location = self.get_customer_location()
+                logger.info(f"Driver {self.name} is picking up customer at {customer_location}")
                 self.get_new_data()
                 msg = self.to_dict()
                 msg['destination'] = f"{customer_location[0]}:{customer_location[1]}"
-                self.client.send(service='planning', request=msg)
+                self.client.send(service=b'planning', request=orjson.dumps(msg))
+                yield env.timeout(1)
 
-                ans = self.client.recv()
-                logger.info(f"{ans=}")
+                while len(self.path) <= 2:
+                    self.get_new_data()
+                    yield env.timeout(1)
+
 
                 for i in range(len(self.path)):
                     self.location = self.path[i]
@@ -96,20 +100,22 @@ class Driver:
                     yield env.timeout(5) # wait for customer to get in
                     self.status = 'enroute'
                     self.update_db()
+                    yield env.timeout(1)
 
-                yield env.timeout(1)
-                continue
             if self.status == 'enroute':
                 destination_location = self.get_customer_location('destination')
                 # remove customer
                 self.change_customer_active()
+                yield env.timeout(1)
 
-                self.get_new_data()
                 msg = self.to_dict()
                 msg['destination'] = f"{destination_location[0]}:{destination_location[1]}"
-                self.client.send(service='planning', request=msg)
-                ans = self.client.recv()
-                logger.info(f"{ans=}")
+                self.client.send(service=b'planning', request=orjson.dumps(msg))
+                yield env.timeout(1)
+
+                while self.location == self.path[-1]:
+                    self.get_new_data()
+                    yield env.timeout(1)
 
                 for i in range(len(self.path)):
                     self.location = self.path[i]
@@ -118,19 +124,24 @@ class Driver:
                     yield env.timeout(1)
 
                 if self.location == self.path[-1]:
-                    yield env.timeout(5) # wait for customer to get out
+                    yield env.timeout(2)  # wait for customer to get out
+                    logger.info(f"Customer {self.customer_id} arrived at destination")
+
                     self.status = 'idle'
                     self.customer_id = None
                     self.path = [self.location, [self.location[0]+1, self.location[1]]] # Dummy path again
                     self.update_db()
+                    yield env.timeout(1)
+
                     self.remove_customer()
-            # sleep(0.15)
+                    yield env.timeout(1)
+
             yield env.timeout(1)
 
     def remove_customer(self):
 #         delete customer by id
-        response = requests.delete(f"{API_URL}/customers/id", params={"customer_id": self.customer_id})
-        logger.info(f"Delete customer: {response.json()}")
+        response = requests.patch(f"{API_URL}/customers/id", params={"customer_id": self.customer_id, "active": False})
+        logger.info(f"Deactivate customer: {response.json()}")
 
     def change_customer_active(self):
         response = requests.put(f"{API_URL}/customers/id", params={"customer_id": self.customer_id, 'active': False})

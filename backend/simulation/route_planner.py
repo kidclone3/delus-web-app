@@ -1,12 +1,14 @@
 import json
 import time
 
+import orjson
 import requests
 from fastapi.encoders import jsonable_encoder
 from loguru import logger
 
+from mdp_worker import MajorDomoWorker
 from zeromq.worker import Worker
-from utils import directions, API_URL
+from utils import directions, API_URL, ZMQ_SERVER_HOST
 from methods import get_graph
 
 graph = get_graph()
@@ -43,27 +45,23 @@ def update_db(driver):
 if __name__ == "__main__":
     logger.add("logs/route_planner.log", level="DEBUG")
 
-    worker = Worker()
+    worker = MajorDomoWorker(f"tcp://{ZMQ_SERVER_HOST}:5556", b"planning", True)
+    reply = None
     while True:
         try:
-            msg = worker.receive()
+            msg = worker.recv(reply)
+            msg = orjson.loads(msg[0])
+            logger.info(f"From {msg.get('location')} to {msg.get('destination')}")
+            start_position = list(map(int, msg.get('location').split(':')))
+            destination = list(map(int, msg.get('destination').split(':')))
+            del msg['destination']
+            path = get_shortest_path(start_position, destination)
+            msg['path'] = json.dumps(path)
 
-            if msg.get('work') != 'route':
-                continue
-            else:
-                # msg = driver dict
-                logger.info(f"From {msg.get('location')} to {msg.get('destination')}")
-                del msg['work']
-                start_position = list(map(int, msg.get('location').split(':')))
-                destination = list(map(int, msg.get('destination').split(':')))
-                del msg['destination']
-                path = get_shortest_path(start_position, destination)
-                msg['path'] = json.dumps(path)
+            logger.info(f"Driver {msg.get('name')} has new path: {path}")
+            update_db(msg)
+            reply = [b"Done"]
 
-                logger.info(f"Driver {msg.get('name')} has new path: {path}")
-                update_db(msg)
-
-            time.sleep(0.8)
         except Exception as e:
-            time.sleep(0.8)
+            time.sleep(0.1)
 
