@@ -1,0 +1,14 @@
+syntax = "proto3";
+message CurrentLocation {
+  int32 pos_x = 1;
+  int32 pos_y = 2;
+}
+
+message Destination {
+  int32 pos_x = 1;
+  int32 pos_y = 2;
+}
+
+service GetDestination {
+  rpc GetDestination(CurrentLocation) returns (Destination) {}
+}

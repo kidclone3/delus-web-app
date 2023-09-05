@@ -120,7 +120,7 @@ if __name__ == "__main__":
     try:
         env = simpy.Environment()
         # env = simpy.rt.RealtimeEnvironment(factor=1)
-        client = MajorDomoClient(f"tcp://{ZMQ_CLIENT_HOST}:5556", True)
+        # client = MajorDomoClient(f"tcp://{ZMQ_CLIENT_HOST}:5556", True)
         list_customers = []
         for cus in customers:
             customer_instance = Customer(cus.get('name'), cus.get('customerId'), [], client, env)

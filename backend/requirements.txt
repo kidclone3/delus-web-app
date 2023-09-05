@@ -39,3 +39,5 @@ urllib3==2.0.4
 usim==0.4.4
 uvicorn==0.22.0
 pyzmq==25.1.1
+grpcio==1.57.0
+grpcio-tools==1.57.0
